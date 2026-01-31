@@ -43,23 +43,31 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
     useEffect(() => {
         if (!videoRef.current) return;
 
-        if (isActive) {
+        const attemptPlay = () => {
             const playPromise = videoRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => setIsPlaying(true))
                     .catch(error => {
                         console.error("Auto-play prevented:", error);
                         setIsPlaying(false);
+                        // If blocked, we might need a user interaction
                     });
             }
+        };
+
+        if (isActive) {
+            // Give it a tiny bit of time to ensure DOM is ready and src is assigned
+            const timer = setTimeout(attemptPlay, 100);
+            return () => clearTimeout(timer);
         } else {
             videoRef.current.pause();
             videoRef.current.currentTime = 0;
             setIsPlaying(false);
         }
-    }, [isActive]);
+    }, [isActive, data.videoUrl]); // Re-run if URL changes too
 
-    const togglePlay = () => {
+    const togglePlay = (e) => {
+        e.stopPropagation();
         if (!videoRef.current) return;
         if (videoRef.current.paused) {
             videoRef.current.play();
@@ -84,14 +92,36 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
             }}>
             {/* Video / Content Layer */}
             {data.videoUrl ? (
-                <video
-                    ref={videoRef}
-                    src={data.videoUrl}
-                    loop
-                    muted
-                    playsInline
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <>
+                    <video
+                        ref={videoRef}
+                        src={data.videoUrl}
+                        loop
+                        muted
+                        playsInline
+                        preload="auto"
+                        autoPlay={isActive}
+                        onLoadedData={() => {
+                            if (isActive) videoRef.current?.play().catch(e => console.log("onLoadedData play error:", e));
+                        }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+
+                    {/* Play Overlay (appears if active but paused) */}
+                    {isActive && !isPlaying && (
+                        <div style={{
+                            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                            backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '20px',
+                            display: 'flex', justifyContent: 'center', alignItems: 'center', pointerEvents: 'none'
+                        }}>
+                            <div style={{
+                                width: 0, height: 0, borderTop: '20px solid transparent',
+                                borderBottom: '20px solid transparent', borderLeft: '30px solid white',
+                                marginLeft: '5px'
+                            }} />
+                        </div>
+                    )}
+                </>
             ) : (
                 <div className="flex-center full-size">
                     <h2 style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{data.contentPlaceholder || "Video Content"}</h2>

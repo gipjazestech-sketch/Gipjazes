@@ -31,6 +31,20 @@
   ],
   "videos": [
     {
+      "id": 4,
+      "username": "asiyanbianuolorun@gmail.com",
+      "userAvatar": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=faces",
+      "description": "",
+      "song": "Original Sound",
+      "artist": "asiyanbianuolorun@gmail.com",
+      "videoUrl": "http://localhost:3000/uploads/1769890593799-898442092.jpeg",
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "saves": 0,
+      "created_at": "2026-01-31T20:16:33.821Z"
+    },
+    {
       "id": 1,
       "username": "ai_visionary",
       "userAvatar": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=faces",

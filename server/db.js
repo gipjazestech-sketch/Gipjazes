@@ -41,7 +41,7 @@ if (!fs.existsSync(dbPath)) {
         comments: 600,
         shares: 850,
         saves: 2000,
-        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-at-night-aerial-view-41484-large.mp4',
+        videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
         created_at: new Date().toISOString()
       },
       {
@@ -55,7 +55,7 @@ if (!fs.existsSync(dbPath)) {
         comments: 1500,
         shares: 3000,
         saves: 5000,
-        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-red-sunset-over-the-mountains-5154-large.mp4',
+        videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
         created_at: new Date().toISOString()
       },
       {
@@ -69,7 +69,7 @@ if (!fs.existsSync(dbPath)) {
         comments: 800,
         shares: 400,
         saves: 1200,
-        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4',
+        videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
         created_at: new Date().toISOString()
       }
     ],
