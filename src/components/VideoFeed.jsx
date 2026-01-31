@@ -77,6 +77,13 @@ const VideoFeed = ({ onProfileClick, filterType }) => {
                 </div>
             )}
 
+            {displayedVideos.length === 0 && filterType !== 'following' && (
+                <div className="flex-center full-size" style={{ color: 'white', flexDirection: 'column' }}>
+                    <h2>No videos yet</h2>
+                    <p>Be the first to upload!</p>
+                </div>
+            )}
+
             {displayedVideos.map((video) => (
                 <div
                     key={video.id}

@@ -39,7 +39,10 @@ const upload = multer({ storage });
 app.use('/uploads', express.static(uploadsDir));
 
 // Serve Frontend (Built Vite App)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve Frontend (Built Vite App)
+// In production (Vercel), valid static files are handled by Vercel's edge, 
+// but we keep this for local 'npm run server' or fallback.
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // --- ROUTES ---
 
@@ -157,7 +160,7 @@ app.get('*', (req, res) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
         return res.status(404).json({ error: 'Not Found' });
     }
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
