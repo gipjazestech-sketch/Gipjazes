@@ -9,18 +9,21 @@ if (!fs.existsSync(dbPath)) {
     users: [
       {
         username: 'ai_visionary',
+        password: 'password123',
         avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=faces',
         bio: 'The future is now! 🤖 Generating dreams with AI.',
         created_at: new Date().toISOString()
       },
       {
         username: 'neon_city',
+        password: 'password123',
         avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=faces',
         bio: 'Midnight drive. 🌃 #vaporwave #chill',
         created_at: new Date().toISOString()
       },
       {
         username: 'creative_mind',
+        password: 'password123',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces',
         bio: 'Capturing the world one pixel at a time 📸',
         created_at: new Date().toISOString()
@@ -83,15 +86,34 @@ const writeDb = (data) => fs.writeFileSync(dbPath, JSON.stringify(data, null, 2)
 const db = {
   getUser: (username) => {
     const data = readDb();
-    return data.users.find(u => u.username === username);
+    const user = data.users.find(u => u.username === username);
+    if (!user) return null;
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   },
-  createUser: (username, avatar, bio) => {
+  authenticateUser: (username, inputPassword) => {
+    const data = readDb();
+    const user = data.users.find(u => u.username === username);
+    if (user && user.password === inputPassword) {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    }
+    return null;
+  },
+  createUser: (username, password, avatar, bio) => {
     const data = readDb();
     if (data.users.find(u => u.username === username)) return;
-    const newUser = { username, avatar, bio, created_at: new Date().toISOString() };
+    const newUser = {
+      username,
+      password: password || 'password123', // Default if not provided (should be provided)
+      avatar,
+      bio,
+      created_at: new Date().toISOString()
+    };
     data.users.push(newUser);
     writeDb(data);
-    return newUser;
+    const { password: _, ...userWithoutPassword } = newUser;
+    return userWithoutPassword;
   },
   getFollowStats: (username) => {
     const data = readDb();

@@ -17,9 +17,30 @@
       "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces",
       "bio": "Capturing the world one pixel at a time 📸",
       "created_at": "2026-01-31T18:19:04.870Z"
+    },
+    {
+      "username": "asiyanbianuolorun@gmail.com",
+      "password": "0916sam",
+      "avatar": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=faces",
+      "bio": "New user",
+      "created_at": "2026-01-31T19:39:53.162Z"
     }
   ],
   "videos": [
+    {
+      "id": 4,
+      "username": "asiyanbianuolorun@gmail.com",
+      "userAvatar": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=faces",
+      "description": "#gipjazes",
+      "song": "Original Sound",
+      "artist": "asiyanbianuolorun@gmail.com",
+      "videoUrl": "http://localhost:3000/uploads/1769888661685-997809020.jpeg",
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "saves": 0,
+      "created_at": "2026-01-31T19:44:21.703Z"
+    },
     {
       "id": 1,
       "username": "ai_visionary",
@@ -55,7 +76,7 @@
       "description": "Nature is amazing 🌿 #nature #vibes",
       "song": "Morning Dew",
       "artist": "Nature Sounds",
-      "likes": 12000,
+      "likes": 12001,
       "comments": 800,
       "shares": 400,
       "saves": 1200,
@@ -63,6 +84,20 @@
       "created_at": "2026-01-31T18:19:04.870Z"
     }
   ],
-  "likes": [],
-  "follows": []
+  "likes": [
+    {
+      "username": "asiyanbianuolorun@gmail.com",
+      "video_id": 3
+    }
+  ],
+  "follows": [
+    {
+      "follower": "asiyanbianuolorun@gmail.com",
+      "followed": "ai_visionary"
+    },
+    {
+      "follower": "asiyanbianuolorun@gmail.com",
+      "followed": "neon_city"
+    }
+  ]
 }

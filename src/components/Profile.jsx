@@ -48,6 +48,8 @@ const Profile = ({ username: propUsername, onBack }) => {
                     followers: (prev.followers || 0) + (isFollowing ? -1 : 1)
                 }));
             }
+        } else {
+            alert("Please login to follow creators!");
         }
     };
 

@@ -37,20 +37,38 @@ app.use(express.static(path.join(__dirname, 'public')));
 // --- ROUTES ---
 
 // Login / Register
+// Login
 app.post('/api/auth/login', (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Username required' });
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
-    let user = db.getUser(username);
+    const user = db.authenticateUser(username, password);
 
     if (!user) {
-        // Auto-register
-        // Use a default gradient or abstract image instead of a cartoon avatar
-        const avatar = `https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=faces`; // Generic user placeholder
-        user = db.createUser(username, avatar, 'New user');
+        return res.status(401).json({ error: 'Invalid credentials or user does not exist' });
     }
 
     // Get stats
+    const stats = db.getFollowStats(username);
+    const followingList = db.getFollowingList(username);
+
+    res.json({ ...user, ...stats, followingList });
+});
+
+// Register
+app.post('/api/auth/register', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+    // Check if exists
+    if (db.getUser(username)) {
+        return res.status(409).json({ error: 'Username already exists' });
+    }
+
+    // Use a default gradient or abstract image
+    const avatar = `https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop&crop=faces`;
+    const user = db.createUser(username, password, avatar, 'New user');
+
     const stats = db.getFollowStats(username);
     const followingList = db.getFollowingList(username);
 

@@ -18,16 +18,19 @@ const Upload = ({ onCancel, onUploadSuccess }) => {
         }
     };
 
-    const handlePost = () => {
+    const handlePost = async () => {
         if (!file) return;
         setIsUploading(true);
 
-        // Simulate network delay
-        setTimeout(() => {
-            uploadVideo(file, caption);
-            setIsUploading(false);
+        const success = await uploadVideo(file, caption);
+
+        setIsUploading(false);
+
+        if (success) {
             onUploadSuccess();
-        }, 1500);
+        } else {
+            alert('Upload failed. Please try again.');
+        }
     };
 
     return (

@@ -28,19 +28,43 @@ export const AppProvider = ({ children }) => {
         }
     };
 
-    const login = async (username) => {
+    const login = async (username, password) => {
         try {
             const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ username, password })
             });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || 'Login failed');
+            }
             const user = await res.json();
             setCurrentUser(user);
-            return true;
+            return { success: true };
         } catch (err) {
             console.error("Login failed", err);
-            return false;
+            return { success: false, error: err.message };
+        }
+    };
+
+    const register = async (username, password) => {
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || 'Registration failed');
+            }
+            const user = await res.json();
+            setCurrentUser(user);
+            return { success: true };
+        } catch (err) {
+            console.error("Registration failed", err);
+            return { success: false, error: err.message };
         }
     };
 
@@ -143,6 +167,7 @@ export const AppProvider = ({ children }) => {
             videos,
             loading,
             login,
+            register,
             logout,
             uploadVideo,
             toggleLike,

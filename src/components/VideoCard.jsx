@@ -21,6 +21,22 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
         if (onProfileClick) onProfileClick(data.username);
     };
 
+    const handleLike = () => {
+        if (!currentUser) {
+            alert("Please login to like videos!");
+            return;
+        }
+        toggleLike(data.id);
+    };
+
+    const handleFollowAction = () => {
+        if (!currentUser) {
+            alert("Please login to follow creators!");
+            return;
+        }
+        toggleFollow(data.username);
+    };
+
     return (
         <div style={{
             position: 'relative',
@@ -74,10 +90,9 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                     </div>
 
                     {/* Follow "+" Badge */}
-                    {/* Hide if it's the current user or already following */}
                     {!(currentUser?.username === data.username || currentUser?.followingList?.includes(data.username)) && (
                         <div
-                            onClick={() => toggleFollow(data.username)}
+                            onClick={handleFollowAction}
                             style={{
                                 position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)',
                                 width: '24px', height: '24px', background: '#FE2C55', borderRadius: '50%',
@@ -90,7 +105,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                     )}
                 </div>
 
-                <ActionIcon icon={Heart} label={data.likes} color={liked ? "#FE2C55" : "white"} fill={liked ? "#FE2C55" : "none"} onClick={() => toggleLike(data.id)} />
+                <ActionIcon icon={Heart} label={data.likes} color={liked ? "#FE2C55" : "white"} fill={liked ? "#FE2C55" : "none"} onClick={handleLike} />
                 <ActionIcon icon={MessageCircle} label={data.comments} />
                 <ActionIcon icon={Bookmark} label={data.saves} />
                 <ActionIcon icon={Share2} label={data.shares} />
