@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, Plus, Music } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -6,6 +6,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
     const videoRef = useRef(null);
     const { toggleLike, toggleFollow, currentUser } = useApp();
     const liked = data.liked;
+    const [isPlaying, setIsPlaying] = useState(false);
 
     // Create a placeholder gradient based on ID if no video URL, to give visual variety
     const bgColors = [
@@ -21,7 +22,8 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
         if (onProfileClick) onProfileClick(data.username);
     };
 
-    const handleLike = () => {
+    const handleLike = (e) => {
+        e.stopPropagation();
         if (!currentUser) {
             alert("Please login to like videos!");
             return;
@@ -29,7 +31,8 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
         toggleLike(data.id);
     };
 
-    const handleFollowAction = () => {
+    const handleFollowAction = (e) => {
+        e.stopPropagation();
         if (!currentUser) {
             alert("Please login to follow creators!");
             return;
@@ -37,23 +40,56 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
         toggleFollow(data.username);
     };
 
+    useEffect(() => {
+        if (!videoRef.current) return;
+
+        if (isActive) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => setIsPlaying(true))
+                    .catch(error => {
+                        console.error("Auto-play prevented:", error);
+                        setIsPlaying(false);
+                    });
+            }
+        } else {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+            setIsPlaying(false);
+        }
+    }, [isActive]);
+
+    const togglePlay = () => {
+        if (!videoRef.current) return;
+        if (videoRef.current.paused) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        } else {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        }
+    };
+
     return (
-        <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            background: data.videoUrl ? 'black' : bg,
-            overflow: 'hidden',
-            scrollSnapAlign: 'start', // Critical for the snap feel
-        }}>
+        <div
+            onClick={togglePlay}
+            style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                background: data.videoUrl ? 'black' : bg,
+                overflow: 'hidden',
+                scrollSnapAlign: 'start',
+                cursor: 'pointer'
+            }}>
             {/* Video / Content Layer */}
             {data.videoUrl ? (
                 <video
                     ref={videoRef}
                     src={data.videoUrl}
                     loop
-                    muted // Auto-play often requires muted first, user can unmute
-                    autoPlay={isActive}
+                    muted
+                    playsInline
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
             ) : (
@@ -115,7 +151,8 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                     marginTop: '20px',
                     width: '48px', height: '48px', borderRadius: '50%', background: '#222',
                     border: '8px solid #333', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    animation: 'spin 4s linear infinite'
+                    animation: 'spin 4s linear infinite',
+                    animationPlayState: isPlaying ? 'running' : 'paused'
                 }}>
                     <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'linear-gradient(45deg, #111, #444)' }}></div>
                 </div>
@@ -149,7 +186,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
 };
 
 const ActionIcon = ({ icon: Icon, label, color = "white", fill = "none", onClick }) => (
-    <div onClick={onClick} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
+    <div onClick={(e) => { e.stopPropagation(); if (onClick) onClick(e); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
         <Icon size={32} color={color} fill={fill} strokeWidth={2} style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))' }} />
         <span style={{ fontSize: '12px', marginTop: '4px', fontWeight: '600', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{label}</span>
     </div>
