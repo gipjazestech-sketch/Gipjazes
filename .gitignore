@@ -9,3 +9,5 @@ uploads/*
 database.sqlite
 npm-debug.log
 yarn-error.log
+
+.vercel

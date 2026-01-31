@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const dbPath = path.join(__dirname, 'database.json');
+const isProduction = process.env.NODE_ENV === 'production';
+const dbPath = isProduction ? path.join('/tmp', 'database.json') : path.join(__dirname, 'database.json');
 
 // Initialize DB if not exists
 if (!fs.existsSync(dbPath)) {

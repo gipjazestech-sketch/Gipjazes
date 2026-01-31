@@ -12,9 +12,16 @@ app.use(cors());
 app.use(express.json());
 
 // Setup Uploads
-const uploadsDir = path.join(__dirname, 'uploads');
+// Setup Uploads
+const isProduction = process.env.NODE_ENV === 'production';
+const uploadsDir = isProduction ? path.join('/tmp', 'uploads') : path.join(__dirname, 'uploads');
+
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    try {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    } catch (e) {
+        console.error("Could not create uploads dir:", e);
+    }
 }
 
 const storage = multer.diskStorage({
@@ -110,7 +117,7 @@ app.post('/api/videos', upload.single('video'), (req, res) => {
 
     if (!file || !username) return res.status(400).json({ error: 'Missing file or username' });
 
-    const videoUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
+    const videoUrl = `/uploads/${file.filename}`;
     const user = db.getUser(username);
 
     const newVideo = db.createVideo({
