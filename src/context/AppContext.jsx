@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AppContext = createContext();
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 export const AppProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
