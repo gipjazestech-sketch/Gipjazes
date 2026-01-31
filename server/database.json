@@ -1,0 +1,68 @@
+{
+  "users": [
+    {
+      "username": "ai_visionary",
+      "avatar": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=faces",
+      "bio": "The future is now! 🤖 Generating dreams with AI.",
+      "created_at": "2026-01-31T18:19:04.868Z"
+    },
+    {
+      "username": "neon_city",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=faces",
+      "bio": "Midnight drive. 🌃 #vaporwave #chill",
+      "created_at": "2026-01-31T18:19:04.870Z"
+    },
+    {
+      "username": "creative_mind",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces",
+      "bio": "Capturing the world one pixel at a time 📸",
+      "created_at": "2026-01-31T18:19:04.870Z"
+    }
+  ],
+  "videos": [
+    {
+      "id": 1,
+      "username": "ai_visionary",
+      "userAvatar": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=faces",
+      "description": "The future is now! 🤖 Generating dreams with AI. #ai #future #scifi",
+      "song": "Synthwave Dreams",
+      "artist": "AI Beat",
+      "likes": 15200,
+      "comments": 600,
+      "shares": 850,
+      "saves": 2000,
+      "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-at-night-aerial-view-41484-large.mp4",
+      "created_at": "2026-01-31T18:19:04.870Z"
+    },
+    {
+      "id": 2,
+      "username": "neon_city",
+      "userAvatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=faces",
+      "description": "Midnight drive. 🌃 #vaporwave #chill",
+      "song": "Nightcall",
+      "artist": "Kavinsky",
+      "likes": 95000,
+      "comments": 1500,
+      "shares": 3000,
+      "saves": 5000,
+      "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-red-sunset-over-the-mountains-5154-large.mp4",
+      "created_at": "2026-01-31T18:19:04.870Z"
+    },
+    {
+      "id": 3,
+      "username": "creative_mind",
+      "userAvatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces",
+      "description": "Nature is amazing 🌿 #nature #vibes",
+      "song": "Morning Dew",
+      "artist": "Nature Sounds",
+      "likes": 12000,
+      "comments": 800,
+      "shares": 400,
+      "saves": 1200,
+      "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
+      "created_at": "2026-01-31T18:19:04.870Z"
+    }
+  ],
+  "likes": [],
+  "follows": []
+}

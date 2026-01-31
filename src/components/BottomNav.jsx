@@ -15,7 +15,7 @@ const BottomNav = ({ activeTab, onChange }) => {
       alignItems: 'center',
       borderTop: '1px solid rgba(255,255,255,0.1)',
       zIndex: 100,
-      paddingBottom: 'safe-area-inset-bottom',
+      paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       <NavItem icon={Home} label="Home" active={activeTab === 'home'} onClick={() => onChange('home')} />
       <NavItem icon={Users} label="Friends" active={activeTab === 'friends'} onClick={() => onChange('friends')} />

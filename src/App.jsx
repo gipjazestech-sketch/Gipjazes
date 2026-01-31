@@ -14,16 +14,25 @@ const FlowStreamApp = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showUpload, setShowUpload] = useState(false);
 
+  const [viewParams, setViewParams] = useState({});
+
   const handleNavChange = (view) => {
     if (view === 'upload') {
       if (!currentUser) {
         setCurrentView('profile'); // Will show login
+        setViewParams({});
       } else {
         setShowUpload(true);
       }
     } else {
       setCurrentView(view);
+      setViewParams({});
     }
+  };
+
+  const navigateToProfile = (username) => {
+    setViewParams({ username });
+    setCurrentView('profile');
   };
 
   if (showUpload) {
@@ -42,7 +51,10 @@ const FlowStreamApp = () => {
   const renderContent = () => {
     switch (currentView) {
       case 'profile':
-        return <Profile />;
+        return <Profile
+          username={viewParams.username}
+          onBack={viewParams.username ? () => setCurrentView('home') : null}
+        />;
       case 'inbox':
         // Reuse login for inbox placeholder for now if not logged in
         if (!currentUser) return <Login onSuccess={() => { }} />;
@@ -52,7 +64,10 @@ const FlowStreamApp = () => {
         return <div className="flex-center full-size">Friends Feed (Coming Soon)</div>;
       case 'home':
       default:
-        return <VideoFeed />;
+        return <VideoFeed
+          onProfileClick={navigateToProfile}
+          filterType={activeTab}
+        />;
     }
   };
 

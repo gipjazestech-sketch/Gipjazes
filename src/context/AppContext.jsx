@@ -1,128 +1,82 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AppContext = createContext();
-
-const INITIAL_VIDEOS = [
-    {
-        id: 1,
-        username: 'ai_visionary',
-        userAvatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=ai_visionary',
-        description: 'The future is now! 🤖 Generating dreams with AI. #ai #future #scifi',
-        song: 'Synthwave Dreams',
-        artist: 'AI Beat',
-        likes: 1500000,
-        liked: false,
-        comments: 60000,
-        saves: 200000,
-        shares: 85000,
-        videoUrl: 'https://exit109.com/~dscircle/RW20seconds_1.mp4',
-    },
-    {
-        id: 2,
-        username: 'neon_city',
-        userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=neon_city',
-        description: 'Midnight drive. 🌃 #vaporwave #chill',
-        song: 'Nightcall',
-        artist: 'Kavinsky',
-        likes: 950000,
-        liked: false,
-        comments: 15000,
-        saves: 50000,
-        shares: 30000,
-        videoUrl: 'https://exit109.com/~dscircle/RW20seconds_2.mp4',
-    }
-];
+const API_URL = 'http://localhost:3000/api';
 
 export const AppProvider = ({ children }) => {
-    // State with Lazy Initialization from Local Storage
-    const [currentUser, setCurrentUser] = useState(() => {
-        const savedUser = localStorage.getItem('currentUser');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
+    const [currentUser, setCurrentUser] = useState(null);
+    const [videos, setVideos] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const [videos, setVideos] = useState(() => {
-        // Version check to force basic refresh if needed, but for now just load
-        const savedVideos = localStorage.getItem('videos_v2');
-        if (!savedVideos) {
-            // If v2 doesn't exist, maybe clear v1 or just ignore
-            return INITIAL_VIDEOS;
+    // Initial Data Fetch
+    useEffect(() => {
+        fetchVideos();
+    }, [currentUser]); // Refetch when user changes (to update liked status)
+
+    const fetchVideos = async () => {
+        try {
+            const url = currentUser
+                ? `${API_URL}/videos?userId=${currentUser.username}`
+                : `${API_URL}/videos`;
+            const res = await fetch(url);
+            const data = await res.json();
+            setVideos(data);
+        } catch (err) {
+            console.error("Failed to fetch videos", err);
+        } finally {
+            setLoading(false);
         }
-        return JSON.parse(savedVideos);
-    });
+    };
 
-    const [users, setUsers] = useState(() => {
-        const savedUsers = localStorage.getItem('users_v2');
-        return savedUsers ? JSON.parse(savedUsers) : {};
-    });
-
-    // Persistence Effects (using v2 keys to separate from old data)
-    useEffect(() => {
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    }, [currentUser]);
-
-    useEffect(() => {
-        localStorage.setItem('videos_v2', JSON.stringify(videos));
-    }, [videos]);
-
-    useEffect(() => {
-        localStorage.setItem('users_v2', JSON.stringify(users));
-    }, [users]);
-
-    const login = (username) => {
-        // Simple mock login
-        const user = users[username] || {
-            username,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-            bio: 'No bio yet.',
-            following: 0,
-            followers: 0,
-            likes: 0,
-            posts: []
-        };
-
-        if (!users[username]) {
-            setUsers(prev => ({ ...prev, [username]: user }));
+    const login = async (username) => {
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const user = await res.json();
+            setCurrentUser(user);
+            return true;
+        } catch (err) {
+            console.error("Login failed", err);
+            return false;
         }
-
-        setCurrentUser(user);
-        return true;
     };
 
     const logout = () => {
         setCurrentUser(null);
     };
 
-    const uploadVideo = (file, caption) => {
+    const uploadVideo = async (file, caption) => {
         if (!currentUser) return false;
 
-        const newVideo = {
-            id: Date.now(),
-            username: currentUser.username,
-            userAvatar: currentUser.avatar,
-            description: caption,
-            song: 'Original Sound',
-            artist: currentUser.username,
-            likes: 0,
-            liked: false,
-            comments: 0,
-            saves: 0,
-            shares: 0,
-            videoUrl: URL.createObjectURL(file), // Create local object URL for preview
-            isLocal: true
-        };
+        const formData = new FormData();
+        formData.append('video', file);
+        formData.append('username', currentUser.username);
+        formData.append('caption', caption);
 
-        // Add to global feed (at the top)
-        setVideos(prev => [newVideo, ...prev]);
-
-        // Update user's post count/list (simplified)
-        const updatedUser = { ...currentUser, posts: [newVideo.id, ...currentUser.posts] };
-        setCurrentUser(updatedUser);
-        setUsers(prev => ({ ...prev, [currentUser.username]: updatedUser }));
-
-        return true;
+        try {
+            const res = await fetch(`${API_URL}/videos`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Optimistic update or refetch
+                fetchVideos();
+                return true;
+            }
+        } catch (err) {
+            console.error("Upload failed", err);
+        }
+        return false;
     };
 
-    const toggleLike = (videoId) => {
+    const toggleLike = async (videoId) => {
+        if (!currentUser) return; // UI should handle auth check, but safety first
+
+        // Optimistic UI Update
         setVideos(prev => prev.map(v => {
             if (v.id === videoId) {
                 const newLiked = !v.liked;
@@ -134,58 +88,66 @@ export const AppProvider = ({ children }) => {
             }
             return v;
         }));
+
+        try {
+            await fetch(`${API_URL}/videos/${videoId}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser.username })
+            });
+        } catch (err) {
+            console.error("Like failed", err);
+            // Revert on error would go here
+        }
     };
 
-    const toggleFollow = (targetUsername) => {
-        if (!currentUser) return; // Must be logged in
-        if (currentUser.username === targetUsername) return; // Can't follow self
+    const toggleFollow = async (targetUsername) => {
+        if (!currentUser) return;
 
+        // Optimistic Update
         const isFollowing = currentUser.followingList?.includes(targetUsername);
-
-        // Update Current User (follower)
-        const updatedCurrentUser = {
+        const updatedUser = {
             ...currentUser,
             followingList: isFollowing
                 ? currentUser.followingList.filter(u => u !== targetUsername)
                 : [...(currentUser.followingList || []), targetUsername],
             following: (currentUser.following || 0) + (isFollowing ? -1 : 1)
         };
-        setCurrentUser(updatedCurrentUser);
-        setUsers(prev => ({ ...prev, [currentUser.username]: updatedCurrentUser }));
+        setCurrentUser(updatedUser);
 
-        // Update Target User (followed) - if they exist in our mock DB
-        // If not in DB (mock video user), we just simulate it locally for UI state if needed, 
-        // but ideally we should initialize them in 'users' state if missing.
-        setUsers(prev => {
-            const targetUser = prev[targetUsername] || {
-                username: targetUsername,
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUsername}`,
-                bio: 'No bio yet.',
-                following: 0,
-                followers: 0,
-                likes: 0,
-                posts: []
-            };
+        try {
+            await fetch(`${API_URL}/users/${targetUsername}/follow`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser.username })
+            });
+        } catch (err) {
+            console.error("Follow failed", err);
+        }
+    };
 
-            return {
-                ...prev,
-                [targetUsername]: {
-                    ...targetUser,
-                    followers: (targetUser.followers || 0) + (isFollowing ? -1 : 1)
-                }
-            };
-        });
+    const getUserProfile = async (username) => {
+        try {
+            const res = await fetch(`${API_URL}/users/${username}`);
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (err) {
+            console.error("Get profile failed", err);
+            return null;
+        }
     };
 
     return (
         <AppContext.Provider value={{
             currentUser,
             videos,
+            loading,
             login,
             logout,
             uploadVideo,
             toggleLike,
-            toggleFollow
+            toggleFollow,
+            getUserProfile
         }}>
             {children}
         </AppContext.Provider>

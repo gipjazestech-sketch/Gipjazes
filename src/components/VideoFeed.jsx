@@ -2,17 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import VideoCard from './VideoCard';
 import { useApp } from '../context/AppContext';
 
-const VideoFeed = () => {
-    const { videos } = useApp();
+const VideoFeed = ({ onProfileClick, filterType }) => {
+    const { videos, loading, currentUser } = useApp();
     const containerRef = useRef(null);
     const [currentVideoId, setCurrentVideoId] = useState(null);
 
+    // Filter videos based on active tab
+    const displayedVideos = (filterType === 'following' && currentUser)
+        ? videos.filter(v => currentUser.followingList?.includes(v.username))
+        : videos;
+
     // Initialize currentVideoId when videos load
     useEffect(() => {
-        if (videos.length > 0 && currentVideoId === null) {
-            setCurrentVideoId(videos[0].id);
+        if (displayedVideos.length > 0 && (currentVideoId === null || !displayedVideos.find(v => v.id === currentVideoId))) {
+            setCurrentVideoId(displayedVideos[0].id);
         }
-    }, [videos]);
+    }, [displayedVideos, currentVideoId]);
 
     // Intersection Observer to detect which video is in view
     useEffect(() => {
@@ -39,7 +44,18 @@ const VideoFeed = () => {
         videoElements.forEach(el => observer.observe(el));
 
         return () => observer.disconnect();
-    }, [videos]); // Re-run when videos list changes (e.g. upload)
+    }, [displayedVideos]); // Re-run when videos list changes (e.g. upload)
+
+    if (loading) {
+        return (
+            <div className="flex-center full-size" style={{ background: 'black', color: 'white' }}>
+                <div style={{
+                    width: 40, height: 40, border: '4px solid #333',
+                    borderTopColor: '#FE2C55', borderRadius: '50%', animation: 'spin 1s linear infinite'
+                }} />
+            </div>
+        );
+    }
 
     return (
         <div
@@ -55,7 +71,13 @@ const VideoFeed = () => {
             }}
             className="no-scrollbar"
         >
-            {videos.map((video) => (
+            {displayedVideos.length === 0 && filterType === 'following' && (
+                <div className="flex-center full-size" style={{ color: 'white', flexDirection: 'column' }}>
+                    <p>Follow some creators to see videos here!</p>
+                </div>
+            )}
+
+            {displayedVideos.map((video) => (
                 <div
                     key={video.id}
                     data-id={video.id}
@@ -67,7 +89,7 @@ const VideoFeed = () => {
                         position: 'relative'
                     }}
                 >
-                    <VideoCard data={video} isActive={currentVideoId === video.id} />
+                    <VideoCard data={video} isActive={currentVideoId === video.id} onProfileClick={onProfileClick} />
                 </div>
             ))}
         </div>

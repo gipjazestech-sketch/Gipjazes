@@ -2,9 +2,9 @@ import React, { useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, Plus, Music } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-const VideoCard = ({ data, isActive }) => {
+const VideoCard = ({ data, isActive, onProfileClick }) => {
     const videoRef = useRef(null);
-    const { toggleLike } = useApp();
+    const { toggleLike, toggleFollow, currentUser } = useApp();
     const liked = data.liked;
 
     // Create a placeholder gradient based on ID if no video URL, to give visual variety
@@ -15,6 +15,11 @@ const VideoCard = ({ data, isActive }) => {
         'linear-gradient(to right, #43e97b 0%, #38f9d7 100%)'
     ];
     const bg = bgColors[data.id % bgColors.length];
+
+    const handleProfileClick = (e) => {
+        e.stopPropagation();
+        if (onProfileClick) onProfileClick(data.username);
+    };
 
     return (
         <div style={{
@@ -54,11 +59,18 @@ const VideoCard = ({ data, isActive }) => {
             }}>
                 {/* Profile Avatar */}
                 <div style={{ position: 'relative', marginBottom: '10px' }}>
-                    <div style={{
-                        width: '48px', height: '48px', borderRadius: '50%', background: 'white', padding: '1px',
-                        overflow: 'hidden'
-                    }}>
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`} alt="avatar" style={{ width: '100%', height: '100%' }} />
+                    <div
+                        onClick={handleProfileClick}
+                        style={{
+                            width: '48px', height: '48px', borderRadius: '50%', background: 'white', padding: '1px',
+                            overflow: 'hidden', cursor: 'pointer'
+                        }}
+                    >
+                        <img
+                            src={data.userAvatar || `https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop`}
+                            alt="avatar"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                     </div>
 
                     {/* Follow "+" Badge */}
@@ -90,7 +102,7 @@ const VideoCard = ({ data, isActive }) => {
                     border: '8px solid #333', display: 'flex', justifyContent: 'center', alignItems: 'center',
                     animation: 'spin 4s linear infinite'
                 }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'url(https://api.dicebear.com/7.x/avataaars/svg?seed=music) center/cover' }}></div>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'linear-gradient(45deg, #111, #444)' }}></div>
                 </div>
             </div>
 
@@ -104,7 +116,7 @@ const VideoCard = ({ data, isActive }) => {
                 textAlign: 'left',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
             }}>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem' }}>@{data.username}</h3>
+                <h3 onClick={handleProfileClick} style={{ margin: '0 0 8px 0', fontSize: '1.1rem', cursor: 'pointer' }}>@{data.username}</h3>
                 <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', lineHeight: '1.2' }}>
                     {data.description} <span style={{ fontWeight: 'bold' }}>#fyp #trending</span>
                 </p>
