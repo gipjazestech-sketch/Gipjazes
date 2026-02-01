@@ -1,16 +1,50 @@
-# React + Vite
+# Gipjazes - Short-Form Video Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a monorepo for the Gipjazes platform, featuring a React Native mobile app and a Node.js API backend.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **apps/mobile**: React Native application for iOS and Android.
+  - `src/components/VideoFeed.tsx`: The main infinite scroll feed.
+  - `src/components/VideoItem.tsx`: Individual video player component.
+- **apps/api**: Node.js backend services.
+  - `src/routes/video.ts`: Video upload and metadata processing endpoints.
+  - `src/db.ts`: Database connection utility.
+- **database**: Database schemas and migrations.
+  - `schema.sql`: PostgreSQL schema for Users, Videos, and social graph.
+- **ARCHITECTURE.md**: Detailed system architecture documentation.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-## Expanding the ESLint configuration
+2.  **Environment Setup**:
+    - Configure PostgreSQL connection in `.env`.
+    - Set up AWS S3 credentials for video storage.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3.  **Run Development Servers**:
+    - Mobile: `cd apps/mobile && npm start`
+    - API: `cd apps/api && npm run dev`
+
+## Deployment
+
+### Backend (API)
+The API is containerized using Docker and ready for deployment to **Google Cloud Run** or any container-based platform.
+1. Build the image: `cd apps/api && docker build -t gipjazes-api .`
+2. Follow the detailed deployment workflow in `.agent/workflows/deploy-api.md`.
+
+### Database
+Ensure you have a production PostgreSQL instance (e.g., Supabase, Neon, or GCP Cloud SQL). Run the migrations using:
+```bash
+cd apps/api && npm run db:migrate
+```
+
+### Mobile
+1. Update `PROD_URL` in `apps/mobile/src/services/api.ts` with your live API endpoint.
+2. Build for production:
+   - Android: `cd apps/mobile && npm run android -- --variant release`
+   - iOS: Use Xcode to Archive and Distribute the app.
+
