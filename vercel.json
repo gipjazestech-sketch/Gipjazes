@@ -16,16 +16,11 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "apps/api/src/index.ts"
-        }
-    ],
-    "routes": [
-        {
-            "handle": "filesystem"
+            "destination": "/apps/api/src/index.ts"
         },
         {
-            "src": "/(.*)",
-            "dest": "/index.html"
+            "source": "/(.*)",
+            "destination": "/index.html"
         }
     ]
 }
