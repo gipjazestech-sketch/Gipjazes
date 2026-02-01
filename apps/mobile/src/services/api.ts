@@ -10,7 +10,7 @@ export const setAuthToken = (token: string | null) => {
 };
 
 // For production, replace with your actual API URL
-const PROD_URL = 'https://flow-stream-sigma.vercel.app/api';
+const PROD_URL = 'https://gipjazes-stream.vercel.app/api';
 const DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api';
 
 const BASE_URL = __DEV__ ? DEV_URL : PROD_URL;

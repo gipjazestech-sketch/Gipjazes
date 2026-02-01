@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
 import FeedScreen from '../screens/FeedScreen';
 import CreatorScreen from '../screens/CreatorScreen';
@@ -33,7 +34,7 @@ const MainTabNavigator = () => {
                 },
                 tabBarActiveTintColor: '#fff',
                 tabBarInactiveTintColor: '#888',
-                tabBarIcon: ({ color, size }) => {
+                tabBarIcon: ({ color, size, focused }) => {
                     let iconName = 'home';
 
                     if (route.name === 'Home') {
@@ -41,8 +42,14 @@ const MainTabNavigator = () => {
                     } else if (route.name === 'Marketplace') {
                         iconName = 'bag-handle';
                     } else if (route.name === 'Create') {
-                        iconName = 'add-circle';
-                        size = 40;
+                        return (
+                            <View style={styles.createButtonContainer}>
+                                <View style={styles.createButtonGlow} />
+                                <View style={[styles.createButton, focused && styles.createButtonActive]}>
+                                    <Icon name="add" size={32} color="#000" />
+                                </View>
+                            </View>
+                        );
                     } else if (route.name === 'Inbox') {
                         iconName = 'chatbubble-ellipses';
                     } else if (route.name === 'Profile') {
@@ -91,5 +98,44 @@ const AppNavigator = () => {
         </NavigationContainer>
     );
 };
+
+const styles = StyleSheet.create({
+    createButtonContainer: {
+        width: 60,
+        height: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+        bottom: 20, // Lifted up like TikTok
+    },
+    createButtonGlow: {
+        position: 'absolute',
+        width: 50,
+        height: 50,
+        borderRadius: 15,
+        backgroundColor: '#D4AF37',
+        opacity: 0.4,
+        transform: [{ scale: 1.2 }],
+    },
+    createButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 14,
+        backgroundColor: '#D4AF37', // Premium Golden
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#FFD700',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+        elevation: 10,
+        borderWidth: 2,
+        borderColor: '#FFF',
+    },
+    createButtonActive: {
+        backgroundColor: '#FFD700',
+        transform: [{ scale: 1.1 }],
+        borderColor: '#000',
+    }
+});
 
 export default AppNavigator;
