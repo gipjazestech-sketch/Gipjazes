@@ -23,10 +23,12 @@ const upload = multer({ dest: path.join(os.tmpdir(), 'uploads') });
 
 const s3 = new S3Client({
     region: process.env.AWS_REGION || 'us-east-1',
-    credentials: process.env.AWS_ACCESS_KEY_ID ? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    endpoint: process.env.AWS_ENDPOINT, // Required for DigitalOcean Spaces
+    forcePathStyle: !!process.env.AWS_ENDPOINT, // Usually required for S3-compatible providers
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-    } : undefined
+    }
 });
 
 interface VideoMetadata {
@@ -59,6 +61,9 @@ router.post('/upload', upload.single('video'), async (req: any, res: any) => {
     }
 
     const file = req.file;
+    if (!s3) {
+        return res.status(500).json({ error: 'AWS S3 is not configured on the server' });
+    }
     const videoId = uuidv4();
     const tempDir = path.join(os.tmpdir(), 'gipjazes_uploads', videoId);
 
@@ -139,8 +144,20 @@ router.post('/upload', upload.single('video'), async (req: any, res: any) => {
             }));
         }
 
-        const playbackHlsUrl = `https://${bucket}.s3.amazonaws.com/videos/${videoId}/hls/${hlsPlaylistFile}`;
-        const thumbnailUrl = `https://${bucket}.s3.amazonaws.com/videos/${videoId}/${thumbnailName}`;
+        const endpoint = process.env.AWS_ENDPOINT;
+
+        let baseUrl;
+        if (endpoint) {
+            // Fix for DigitalOcean/Supabase endpoints
+            // Example: https://nyc3.digitaloceanspaces.com -> https://bucket.nyc3.digitaloceanspaces.com
+            const url = new URL(endpoint);
+            baseUrl = `${url.protocol}//${bucket}.${url.host}`;
+        } else {
+            baseUrl = `https://${bucket}.s3.amazonaws.com`;
+        }
+
+        const playbackHlsUrl = `${baseUrl}/videos/${videoId}/hls/${hlsPlaylistFile}`;
+        const thumbnailUrl = `${baseUrl}/videos/${videoId}/${thumbnailName}`;
         const description = req.body.description || req.body.title || 'Untitled';
         const hashtags = description.match(/#\w+/g) || [];
 
@@ -206,17 +223,13 @@ router.get('/', async (req, res) => {
         const { rows } = await pool.query(query, [limit, offset, currentUserId]);
 
         // Transform data to match frontend expectations
-        const videos = rows.map(row => ({
+        const videos = rows.map((row: any) => ({
             id: row.id,
-            uri: row.playback_hls_url || `https://s3.amazonaws.com/${process.env.S3_BUCKET_NAME}/${row.s3_key}`, // Fallback to raw if no HLS
-            thumbnailUrl: row.thumbnail_url,
-            videoWidth: row.width,
-            videoHeight: row.height,
+            uri: row.playback_hls_url || `https://s3.amazonaws.com/${process.env.S3_BUCKET_NAME}/${row.s3_key}`,
+            thumbnail: row.thumbnail_url,
             likes: parseInt(row.likes_count || '0'),
             comments: row.comments_count || 0,
             description: row.description || row.title,
-            isLiked: row.is_liked_by_viewer,
-            isFollowing: row.is_followed_by_viewer,
             user: {
                 id: row.user_id,
                 username: row.username,
@@ -250,7 +263,7 @@ router.get('/users/:id', async (req, res) => {
     `;
         const { rows } = await pool.query(query, [userId, limit, offset]);
 
-        const videos = rows.map(row => ({
+        const videos = rows.map((row: any) => ({
             id: row.id,
             uri: row.playback_hls_url || `https://s3.amazonaws.com/${process.env.S3_BUCKET_NAME}/${row.s3_key}`,
             thumbnail: row.thumbnail_url,

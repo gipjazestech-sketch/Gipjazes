@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST new product
-router.post('/', async (req: any, res) => {
+router.post('/', async (req: any, res: any) => {
     const { title, description, price, category, image_url } = req.body;
     const userId = req.user?.id;
 
