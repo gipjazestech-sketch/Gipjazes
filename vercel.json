@@ -15,12 +15,16 @@
     ],
     "rewrites": [
         {
+            "source": "/api/health",
+            "destination": "/apps/api/src/index.ts"
+        },
+        {
             "source": "/api/(.*)",
             "destination": "/apps/api/src/index.ts"
         },
         {
             "source": "/(.*)",
-            "destination": "/index.html"
+            "destination": "/$1"
         }
     ]
 }
