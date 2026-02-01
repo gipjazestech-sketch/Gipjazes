@@ -12,8 +12,8 @@ import { pool } from '../db';
 
 // Configure FFmpeg paths
 try {
-    if (ffmpegStatic) ffmpeg.setFfmpegPath(ffmpegStatic);
-    if (ffprobeStatic) ffmpeg.setFfprobePath(ffprobeStatic.path);
+    if (ffmpegStatic) ffmpeg.setFfmpegPath(ffmpegStatic as any);
+    if (ffprobeStatic) ffmpeg.setFfprobePath((ffprobeStatic as any).path);
 } catch (e) {
     console.warn("FFmpeg static paths could not be set:", e);
 }
@@ -301,10 +301,10 @@ router.get('/search', async (req, res) => {
     `;
         const { rows } = await pool.query(query, [`%${q}%`]);
 
-        const videos = rows.map(row => ({
+        const videos = rows.map((row: any) => ({
             id: row.id,
             uri: row.playback_hls_url || `https://s3.amazonaws.com/${process.env.S3_BUCKET_NAME}/${row.s3_key}`,
-            thumbnailUrl: row.thumbnail_url,
+            thumbnail: row.thumbnail_url,
             likes: parseInt(row.likes_count || '0'),
             comments: row.comments_count || 0,
             description: row.description || row.title,
