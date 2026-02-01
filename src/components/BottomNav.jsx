@@ -13,7 +13,7 @@ const BottomNav = ({ activeTab, onChange }) => {
       display: 'flex',
       justifyContent: 'space-around',
       alignItems: 'center',
-      borderTop: '1px solid rgba(255,255,255,0.1)',
+      borderTop: '1px solid #D4AF37',
       zIndex: 100,
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
@@ -23,8 +23,8 @@ const BottomNav = ({ activeTab, onChange }) => {
       {/* Upload Button */}
       <div style={{
         position: 'relative',
-        width: '45px',
-        height: '30px',
+        width: '50px',
+        height: '40px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -32,34 +32,27 @@ const BottomNav = ({ activeTab, onChange }) => {
       }} onClick={() => onChange('upload')}>
         <div style={{
           position: 'absolute',
-          left: '0px',
-          width: '38px',
-          height: '100%',
-          background: 'cyan',
-          borderRadius: '8px',
-          opacity: 0.8
-        }} />
-        <div style={{
-          position: 'absolute',
-          right: '0px',
-          width: '38px',
-          height: '100%',
-          background: 'red',
-          borderRadius: '8px',
-          opacity: 0.8
+          width: '45px',
+          height: '35px',
+          background: 'var(--color-gold-glow)',
+          borderRadius: '12px',
+          filter: 'blur(8px)',
+          zIndex: 0
         }} />
         <div style={{
           position: 'relative',
-          width: '38px',
-          height: '30px',
-          background: 'white',
-          borderRadius: '8px',
+          width: '40px',
+          height: '40px',
+          background: 'linear-gradient(135deg, #D4AF37, #FFD700)',
+          borderRadius: '12px',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 2
+          zIndex: 2,
+          border: '1px solid white',
+          boxShadow: '0 0 15px rgba(212, 175, 55, 0.5)'
         }}>
-          <Plus color="black" size={20} strokeWidth={3} />
+          <Plus color="black" size={24} strokeWidth={4} />
         </div>
       </div>
 
@@ -78,7 +71,7 @@ const NavItem = ({ icon: Icon, label, active, badge, onClick }) => (
     opacity: active ? 1 : 0.6,
     cursor: 'pointer',
     width: '20%', // Ensure equal click targets
-    color: active ? 'white' : 'rgba(255,255,255,0.6)'
+    color: active ? '#D4AF37' : 'rgba(255,255,255,0.6)'
   }}>
     <div style={{ position: 'relative' }}>
       <Icon size={24} strokeWidth={active ? 3 : 2} />

@@ -5,11 +5,10 @@
 
   --color-bg: #000000;
   --color-text: #ffffff;
-  --color-accent: #FE2C55;
-  /* TikTok/Musical.ly style Red/Pink */
+  --color-accent: #D4AF37; /* Premium Gold */
+  --color-gold-glow: rgba(212, 175, 55, 0.4);
   --color-accent-blue: #25F4EE;
-  /* Cyan highlight */
-  --bottom-nav-height: 50px;
+  --bottom-nav-height: 60px;
 }
 
 body {

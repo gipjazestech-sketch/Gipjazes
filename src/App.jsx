@@ -99,13 +99,13 @@ const FlowStreamApp = () => {
 
           <div style={{ display: 'flex', gap: '20px', fontSize: '1.1rem', fontWeight: '600', pointerEvents: 'auto' }}>
             <span
-              style={{ opacity: activeTab === 'following' ? 1 : 0.6, cursor: 'pointer', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+              style={{ color: activeTab === 'following' ? '#D4AF37' : 'white', opacity: activeTab === 'following' ? 1 : 0.6, cursor: 'pointer', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
               onClick={() => setActiveTab('following')}
             >
               Following
             </span>
             <span
-              style={{ opacity: activeTab === 'foryou' ? 1 : 0.6, cursor: 'pointer', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+              style={{ color: activeTab === 'foryou' ? '#D4AF37' : 'white', opacity: activeTab === 'foryou' ? 1 : 0.6, cursor: 'pointer', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
               onClick={() => setActiveTab('foryou')}
             >
               For You

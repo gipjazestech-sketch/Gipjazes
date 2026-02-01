@@ -47,10 +47,11 @@ const Login = ({ onSuccess }) => {
             padding: '20px'
         }}>
             <div style={{
-                width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#222',
-                display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px'
+                width: '80px', height: '80px', borderRadius: '20px', backgroundColor: '#D4AF37',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px',
+                boxShadow: '0 0 20px var(--color-gold-glow)', border: '2px solid white'
             }}>
-                <User size={40} color="#666" />
+                <span style={{ fontSize: '40px', fontWeight: '900', color: 'black' }}>G</span>
             </div>
 
             <h2 style={{ marginBottom: '10px' }}>{isLoginMode ? 'Log in' : 'Sign up'}</h2>
@@ -99,10 +100,12 @@ const Login = ({ onSuccess }) => {
                     type="submit"
                     disabled={isLoading}
                     style={{
-                        width: '100%', padding: '15px', borderRadius: '4px', border: 'none',
-                        background: isLoading ? '#555' : '#FE2C55', color: 'white',
+                        width: '100%', padding: '15px', borderRadius: '8px', border: 'none',
+                        background: isLoading ? '#555' : 'linear-gradient(45deg, #D4AF37, #FFD700)',
+                        color: 'black',
                         fontSize: '1rem', fontWeight: 'bold', cursor: isLoading ? 'default' : 'pointer',
-                        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
+                        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
+                        boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
                     }}
                 >
                     {isLoading ? 'Processing...' : (isLoginMode ? 'Log In' : 'Sign Up')}
@@ -117,7 +120,7 @@ const Login = ({ onSuccess }) => {
                         setIsLoginMode(!isLoginMode);
                         setError('');
                     }}
-                    style={{ color: '#FE2C55', cursor: 'pointer', fontWeight: '600' }}
+                    style={{ color: '#D4AF37', cursor: 'pointer', fontWeight: '600' }}
                 >
                     {isLoginMode ? 'Sign up' : 'Log in'}
                 </span>
