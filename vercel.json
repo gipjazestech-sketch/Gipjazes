@@ -13,15 +13,13 @@
             }
         }
     ],
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "apps/api/src/index.ts"
+        }
+    ],
     "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "apps/api/src/index.ts"
-        },
-        {
-            "src": "/uploads/(.*)",
-            "dest": "apps/api/src/index.ts"
-        },
         {
             "handle": "filesystem"
         },

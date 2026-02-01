@@ -28,12 +28,12 @@ const MainTabNavigator = () => {
                 tabBarStyle: {
                     backgroundColor: '#000',
                     borderTopWidth: 0.5,
-                    borderTopColor: '#333',
-                    height: 60,
-                    paddingBottom: 8,
+                    borderTopColor: '#D4AF37', // Golden border
+                    height: 65,
+                    paddingBottom: 10,
                 },
-                tabBarActiveTintColor: '#fff',
-                tabBarInactiveTintColor: '#888',
+                tabBarActiveTintColor: '#D4AF37', // Golden Active Tab
+                tabBarInactiveTintColor: '#666',
                 tabBarIcon: ({ color, size, focused }) => {
                     let iconName = 'home';
 
