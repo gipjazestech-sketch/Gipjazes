@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { pool } from './db';
 
 dotenv.config();
 
@@ -11,19 +12,36 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// 1. Health Check (Move to TOP to avoid being blocked or failing later)
-app.get(['/', '/health', '/api/health'], (req, res) => {
+// Request logging
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    next();
+});
+
+// 1. Health Check
+app.get(['/', '/health', '/api/health'], async (req, res) => {
+    let dbStatus = 'disconnected';
+    try {
+        if (pool) {
+            await pool.query('SELECT 1');
+            dbStatus = 'connected';
+        }
+    } catch (e) {
+        dbStatus = 'error';
+    }
+
     res.json({
         status: 'ok',
         service: 'gipjazes-api',
         env: process.env.NODE_ENV,
-        database: !!process.env.DATABASE_URL,
+        database: dbStatus,
+        storage: !!process.env.AWS_ACCESS_KEY_ID,
         timestamp: new Date().toISOString()
     });
 });
 
 // Import Routes
-import { authenticateToken } from './middleware/auth';
+import { authenticateToken, optionalAuthenticateToken } from './middleware/auth';
 import authRoutes from './routes/auth';
 import videoRoutes from './routes/video';
 import marketplaceRoutes from './routes/marketplace';
@@ -32,18 +50,23 @@ import chatRoutes from './routes/chat';
 // 2. Auth Routes (Unprotected)
 app.use('/api/auth', authRoutes);
 
-// 3. Protected Routes
-app.use('/api/videos', authenticateToken, videoRoutes);
+// 3. Protected / Partially Protected Routes
+app.use('/api/videos', optionalAuthenticateToken, videoRoutes);
 app.use('/api/marketplace', authenticateToken, marketplaceRoutes);
 app.use('/api/chat', authenticateToken, chatRoutes);
 
 // Error handling
 app.use((err: any, req: any, res: any, next: any) => {
-    console.error('Server Error:', err.stack);
-    res.status(500).json({
-        error: 'Internal Server Error',
-        message: err.message,
-        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    console.error('SERVER_ERROR:', err);
+
+    const statusCode = err.status || err.statusCode || 500;
+    const message = err.message || 'Internal Server Error';
+
+    // Always return JSON
+    res.status(statusCode).json({
+        error: true,
+        message: message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 });
 

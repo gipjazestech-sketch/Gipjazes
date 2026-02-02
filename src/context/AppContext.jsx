@@ -10,15 +10,35 @@ export const AppProvider = ({ children }) => {
 
     // Initial Data Fetch
     useEffect(() => {
+        const savedToken = localStorage.getItem('fs_token');
+        const savedUser = localStorage.getItem('fs_user');
+
+        if (savedToken && savedUser) {
+            setCurrentUser({
+                token: savedToken,
+                user: JSON.parse(savedUser)
+            });
+        }
+
         fetchVideos();
-    }, [currentUser]); // Refetch when user changes (to update liked status)
+    }, []); // Only on mount
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchVideos();
+        }
+    }, [currentUser]);
 
     const fetchVideos = async () => {
         try {
             const url = currentUser
-                ? `${API_URL}/videos?userId=${currentUser.username}`
+                ? `${API_URL}/videos?userId=${currentUser.user?.username || currentUser.username}`
                 : `${API_URL}/videos`;
-            const res = await fetch(url);
+            const headers = {};
+            if (currentUser?.token) {
+                headers['Authorization'] = `Bearer ${currentUser.token}`;
+            }
+            const res = await fetch(url, { headers });
             const data = await res.json();
             setVideos(data);
         } catch (err) {
@@ -36,53 +56,91 @@ export const AppProvider = ({ children }) => {
                 body: JSON.stringify({ username, password })
             });
             if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.error || 'Login failed');
+                let errorMsg = 'Login failed';
+                try {
+                    const contentType = res.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const error = await res.json();
+                        errorMsg = error.error || error.message || errorMsg;
+                    } else {
+                        errorMsg = `Server error (${res.status})`;
+                    }
+                } catch (e) {
+                    console.error("Error parsing error response", e);
+                }
+                throw new Error(errorMsg);
             }
-            const user = await res.json();
-            setCurrentUser(user);
+            const data = await res.json();
+            console.log("Login success:", data);
+            setCurrentUser(data);
+            if (data.token) {
+                localStorage.setItem('fs_token', data.token);
+                localStorage.setItem('fs_user', JSON.stringify(data.user));
+            }
             return { success: true };
         } catch (err) {
-            console.error("Login failed", err);
+            console.error("Login Error Details:", err);
             return { success: false, error: err.message };
         }
     };
 
-    const register = async (username, password) => {
+    const register = async (username, email, password) => {
         try {
             const res = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, email, password })
             });
             if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.error || 'Registration failed');
+                let errorMsg = 'Registration failed';
+                try {
+                    const contentType = res.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const error = await res.json();
+                        errorMsg = error.error || error.message || errorMsg;
+                    } else {
+                        errorMsg = `Server error (${res.status})`;
+                    }
+                } catch (e) {
+                    console.error("Error parsing error response", e);
+                }
+                throw new Error(errorMsg);
             }
-            const user = await res.json();
-            setCurrentUser(user);
+            const data = await res.json();
+            console.log("Registration success:", data);
+            setCurrentUser(data);
+            if (data.token) {
+                localStorage.setItem('fs_token', data.token);
+                localStorage.setItem('fs_user', JSON.stringify(data.user));
+            }
             return { success: true };
         } catch (err) {
-            console.error("Registration failed", err);
+            console.error("Registration Error Details:", err);
             return { success: false, error: err.message };
         }
     };
 
     const logout = () => {
         setCurrentUser(null);
+        localStorage.removeItem('fs_token');
+        localStorage.removeItem('fs_user');
     };
 
     const uploadVideo = async (file, caption) => {
         if (!currentUser) return false;
 
+        const username = currentUser.user?.username || currentUser.username;
         const formData = new FormData();
         formData.append('video', file);
-        formData.append('username', currentUser.username);
+        formData.append('username', username);
         formData.append('caption', caption);
 
         try {
-            const res = await fetch(`${API_URL}/videos`, {
+            const res = await fetch(`${API_URL}/videos/upload`, {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${currentUser.token}`
+                },
                 body: formData
             });
             const data = await res.json();
@@ -116,8 +174,10 @@ export const AppProvider = ({ children }) => {
         try {
             await fetch(`${API_URL}/videos/${videoId}/like`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser.username })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentUser.token}`
+                }
             });
         } catch (err) {
             console.error("Like failed", err);
@@ -140,10 +200,12 @@ export const AppProvider = ({ children }) => {
         setCurrentUser(updatedUser);
 
         try {
-            await fetch(`${API_URL}/users/${targetUsername}/follow`, {
+            await fetch(`${API_URL}/videos/users/${targetUsername}/follow`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser.username })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentUser.token}`
+                }
             });
         } catch (err) {
             console.error("Follow failed", err);

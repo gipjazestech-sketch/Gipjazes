@@ -22,3 +22,23 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         return res.status(403).json({ error: 'Invalid or expired token' });
     }
 };
+
+export const optionalAuthenticateToken = (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return next();
+    }
+
+    try {
+        if (JWT_SECRET) {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            (req as any).user = decoded;
+        }
+        next();
+    } catch (err) {
+        // Even if token is invalid, we continue but don't set req.user
+        next();
+    }
+};

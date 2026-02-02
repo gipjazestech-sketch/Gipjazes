@@ -7,6 +7,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import os from 'os';
 import { pool } from '../db';
+import { authenticateToken } from '../middleware/auth';
 
 // Configure FFmpeg paths
 try {
@@ -62,7 +63,7 @@ const extractMetadata = (filePath: string): Promise<VideoMetadata> => {
 };
 
 // Upload Endpoint
-router.post('/upload', upload.single('video'), async (req: any, res: any) => {
+router.post('/upload', authenticateToken, upload.single('video'), async (req: any, res: any) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No video file provided' });
     }
@@ -77,50 +78,85 @@ router.post('/upload', upload.single('video'), async (req: any, res: any) => {
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
     try {
-        // 1. Extract Metadata
-        const metadata = await extractMetadata(file.path);
+        // 1. Extract Metadata (Safe attempt)
+        let metadata: VideoMetadata = { duration: 0, width: 0, height: 0, format: 'unknown' };
+        try {
+            metadata = await extractMetadata(file.path);
+        } catch (e) {
+            console.warn("⚠️ Metadata extraction failed, continuing without it.", e);
+        }
 
-        // 2. Generate Thumbnail
-        const thumbnailName = 'thumbnail.jpg';
-        const thumbnailPath = path.join(tempDir, thumbnailName);
-        await new Promise((resolve, reject) => {
-            ffmpeg(file.path)
-                .screenshots({
-                    count: 1,
-                    folder: tempDir,
-                    filename: thumbnailName,
-                    size: '320x640'
-                })
-                .on('end', resolve)
-                .on('error', reject);
-        });
-
-        // 3. Transcode to HLS
-        const hlsFolder = path.join(tempDir, 'hls');
-        if (!fs.existsSync(hlsFolder)) fs.mkdirSync(hlsFolder, { recursive: true });
-        const hlsPlaylistFile = 'playlist.m3u8';
-        const hlsPath = path.join(hlsFolder, hlsPlaylistFile);
-
-        await new Promise((resolve, reject) => {
-            ffmpeg(file.path)
-                .addOptions([
-                    '-profile:v baseline',
-                    '-level 3.0',
-                    '-start_number 0',
-                    '-hls_time 10',
-                    '-hls_list_size 0',
-                    '-f hls'
-                ])
-                .output(hlsPath)
-                .on('end', resolve)
-                .on('error', reject)
-                .run();
-        });
-
-        // 4. Upload Files to S3
+        // 2 & 3. Generate Thumbnail and Transcode (Safe attempt)
+        let hasHls = false;
+        let thumbnailS3Key: string | null = null;
         const bucket = process.env.S3_BUCKET_NAME!;
 
-        // Upload original for backup/storage
+        try {
+            // Generate Thumbnail
+            const thumbnailName = 'thumbnail.jpg';
+            const thumbnailPath = path.join(tempDir, thumbnailName);
+            await new Promise((resolve, reject) => {
+                ffmpeg(file.path)
+                    .screenshots({
+                        count: 1,
+                        folder: tempDir,
+                        filename: thumbnailName,
+                        size: '320x640'
+                    })
+                    .on('end', resolve)
+                    .on('error', reject);
+            });
+
+            // Upload thumbnail
+            thumbnailS3Key = `videos/${videoId}/${thumbnailName}`;
+            await s3.send(new PutObjectCommand({
+                Bucket: bucket,
+                Key: thumbnailS3Key,
+                Body: fs.createReadStream(thumbnailPath),
+                ContentType: 'image/jpeg',
+            }));
+
+            // Try HLS transcoding
+            const hlsFolder = path.join(tempDir, 'hls');
+            if (!fs.existsSync(hlsFolder)) fs.mkdirSync(hlsFolder, { recursive: true });
+            const hlsPlaylistFile = 'playlist.m3u8';
+            const hlsPath = path.join(hlsFolder, hlsPlaylistFile);
+
+            await new Promise((resolve, reject) => {
+                const command = ffmpeg(file.path)
+                    .addOptions([
+                        '-profile:v baseline',
+                        '-level 3.0',
+                        '-start_number 0',
+                        '-hls_time 10',
+                        '-hls_list_size 0',
+                        '-f hls'
+                    ])
+                    .output(hlsPath);
+
+                command.on('end', resolve);
+                command.on('error', reject);
+                command.run();
+            });
+
+            // Upload HLS segments and playlist
+            const hlsFiles = fs.readdirSync(hlsFolder);
+            for (const hlsFile of hlsFiles) {
+                const filePath = path.join(hlsFolder, hlsFile);
+                const s3HlsKey = `videos/${videoId}/hls/${hlsFile}`;
+                await s3.send(new PutObjectCommand({
+                    Bucket: bucket,
+                    Key: s3HlsKey,
+                    Body: fs.createReadStream(filePath),
+                    ContentType: hlsFile.endsWith('.m3u8') ? 'application/x-mpegURL' : 'video/MP2T'
+                }));
+            }
+            hasHls = true;
+        } catch (e) {
+            console.warn("⚠️ Thumbnail/HLS processing failed. Falling back to raw video.", e);
+        }
+
+        // 4. Final Video Upload (Original/Raw)
         const originalS3Key = `videos/${videoId}/original${path.extname(file.originalname)}`;
         await s3.send(new PutObjectCommand({
             Bucket: bucket,
@@ -129,27 +165,6 @@ router.post('/upload', upload.single('video'), async (req: any, res: any) => {
             ContentType: file.mimetype,
         }));
 
-        // Upload thumbnail
-        const thumbnailS3Key = `videos/${videoId}/${thumbnailName}`;
-        await s3.send(new PutObjectCommand({
-            Bucket: bucket,
-            Key: thumbnailS3Key,
-            Body: fs.createReadStream(thumbnailPath),
-            ContentType: 'image/jpeg',
-        }));
-
-        // Upload HLS segments and playlist
-        const hlsFiles = fs.readdirSync(hlsFolder);
-        for (const hlsFile of hlsFiles) {
-            const filePath = path.join(hlsFolder, hlsFile);
-            const s3HlsKey = `videos/${videoId}/hls/${hlsFile}`;
-            await s3.send(new PutObjectCommand({
-                Bucket: bucket,
-                Key: s3HlsKey,
-                Body: fs.createReadStream(filePath),
-                ContentType: hlsFile.endsWith('.m3u8') ? 'application/x-mpegURL' : 'video/MP2T'
-            }));
-        }
 
         const endpoint = process.env.AWS_ENDPOINT;
 
@@ -330,7 +345,7 @@ router.get('/search', async (req, res) => {
 });
 
 // Like a Video
-router.post('/:id/like', async (req, res) => {
+router.post('/:id/like', authenticateToken, async (req, res) => {
     const videoId = req.params.id;
     const userId = (req as any).user.id;
 
@@ -347,7 +362,7 @@ router.post('/:id/like', async (req, res) => {
 });
 
 // Unlike a Video
-router.delete('/:id/like', async (req, res) => {
+router.delete('/:id/like', authenticateToken, async (req, res) => {
     const videoId = req.params.id;
     const userId = (req as any).user.id;
 
@@ -383,7 +398,7 @@ router.get('/:id/comments', async (req, res) => {
 });
 
 // Add a Comment
-router.post('/:id/comments', async (req, res) => {
+router.post('/:id/comments', authenticateToken, async (req, res) => {
     const videoId = req.params.id;
     const userId = (req as any).user.id;
     const { text } = req.body;
@@ -408,7 +423,7 @@ router.post('/:id/comments', async (req, res) => {
 });
 
 // Follow a User
-router.post('/users/:id/follow', async (req, res) => {
+router.post('/users/:id/follow', authenticateToken, async (req, res) => {
     const followingId = req.params.id;
     const followerId = (req as any).user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
@@ -434,7 +449,7 @@ router.post('/users/:id/follow', async (req, res) => {
 });
 
 // Unfollow a User
-router.delete('/users/:id/follow', async (req, res) => {
+router.delete('/users/:id/follow', authenticateToken, async (req, res) => {
     const followingId = req.params.id;
     const followerId = (req as any).user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
