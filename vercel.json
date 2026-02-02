@@ -9,22 +9,18 @@
             "src": "package.json",
             "use": "@vercel/static-build",
             "config": {
-                "distDir": "public"
+                "distDir": "dist"
             }
         }
     ],
     "rewrites": [
         {
-            "source": "/api/health",
-            "destination": "/apps/api/src/index.ts"
-        },
-        {
             "source": "/api/(.*)",
-            "destination": "/apps/api/src/index.ts"
+            "destination": "apps/api/src/index.ts"
         },
         {
             "source": "/(.*)",
-            "destination": "/$1"
+            "destination": "/index.html"
         }
     ]
 }

@@ -48,11 +48,12 @@ const VideoFeed = ({ onProfileClick, filterType }) => {
 
     if (loading) {
         return (
-            <div className="flex-center full-size" style={{ background: 'black', color: 'white' }}>
+            <div className="flex-center full-size" style={{ background: 'black', color: 'white', flexDirection: 'column', gap: '20px' }}>
                 <div style={{
                     width: 40, height: 40, border: '4px solid #333',
-                    borderTopColor: '#FE2C55', borderRadius: '50%', animation: 'spin 1s linear infinite'
+                    borderTopColor: '#D4AF37', borderRadius: '50%', animation: 'spin 1s linear infinite'
                 }} />
+                <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>Connecting to Flow Stream...</p>
             </div>
         );
     }

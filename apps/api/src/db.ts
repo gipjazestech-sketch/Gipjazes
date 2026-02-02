@@ -23,8 +23,7 @@ if (process.env.DATABASE_URL) {
         console.error('❌ Unexpected error on idle client', err);
     });
 } else {
-    console.error('❌ DATABASE_URL is not set in environment variables');
-    process.exit(1);
+    console.warn('⚠️ DATABASE_URL is not set. Database operations will fail.');
 }
 
 export { pool };
