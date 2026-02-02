@@ -14,35 +14,53 @@ export const AppProvider = ({ children }) => {
         const savedUser = localStorage.getItem('fs_user');
 
         if (savedToken && savedUser) {
-            setCurrentUser({
-                token: savedToken,
-                user: JSON.parse(savedUser)
-            });
+            try {
+                setCurrentUser({
+                    token: savedToken,
+                    user: JSON.parse(savedUser)
+                });
+            } catch (e) {
+                console.error("Failed to restore session", e);
+                localStorage.removeItem('fs_token');
+                localStorage.removeItem('fs_user');
+            }
         }
 
-        fetchVideos();
+        fetchVideos().catch(err => console.error("Initial fetch failed:", err));
     }, []); // Only on mount
 
     useEffect(() => {
         if (currentUser) {
-            fetchVideos();
+            fetchVideos().catch(err => console.error("Auth status change fetch failed:", err));
         }
     }, [currentUser]);
 
     const fetchVideos = async () => {
+        setLoading(true);
         try {
             const url = currentUser
                 ? `${API_URL}/videos?userId=${currentUser.user?.username || currentUser.username}`
                 : `${API_URL}/videos`;
+
             const headers = {};
             if (currentUser?.token) {
                 headers['Authorization'] = `Bearer ${currentUser.token}`;
             }
+
             const res = await fetch(url, { headers });
+
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Oops! The server didn't send JSON.");
+            }
+
             const data = await res.json();
-            setVideos(data);
+            setVideos(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("Failed to fetch videos", err);
+            console.error("Failed to fetch videos:", err);
+            setVideos([]);
         } finally {
             setLoading(false);
         }

@@ -101,6 +101,10 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                         playsInline
                         preload="auto"
                         autoPlay={isActive}
+                        onError={(e) => {
+                            console.warn("Video failed to load:", data.uri || data.videoUrl);
+                            e.target.style.display = 'none';
+                        }}
                         onLoadedData={() => {
                             if (isActive) videoRef.current?.play().catch(e => console.log("onLoadedData play error:", e));
                         }}

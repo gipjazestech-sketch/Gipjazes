@@ -9,11 +9,11 @@ const Profile = ({ username: propUsername, onBack }) => {
     const [profileUser, setProfileUser] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(false);
 
-    const targetUsername = propUsername || currentUser?.username;
-    const isMe = currentUser && targetUsername === currentUser.username;
+    const targetUsername = propUsername || currentUser?.user?.username || currentUser?.username;
+    const isMe = currentUser && targetUsername === (currentUser.user?.username || currentUser.username);
 
     // Determine which user object to display
-    const displayUser = isMe ? currentUser : profileUser;
+    const displayUser = isMe ? (currentUser.user || currentUser) : profileUser;
 
     React.useEffect(() => {
         if (!isMe && targetUsername) {
@@ -33,8 +33,8 @@ const Profile = ({ username: propUsername, onBack }) => {
         return <div className="flex-center full-size" style={{ color: 'white' }}>Loading...</div>;
     }
 
-    const userVideos = videos.filter(v => v.username === displayUser.username);
-    const isFollowing = currentUser?.followingList?.includes(displayUser.username);
+    const userVideos = videos.filter(v => (v.user?.username || v.username) === displayUser.username);
+    const isFollowing = (currentUser?.user?.followingList || currentUser?.followingList)?.includes(displayUser.username);
 
     const handleFollow = () => {
         if (currentUser) {
@@ -100,7 +100,7 @@ const Profile = ({ username: propUsername, onBack }) => {
                     marginBottom: '10px',
                     border: '1px solid #333'
                 }}>
-                    <img src={displayUser.avatar} alt="profile" style={{ width: '100%', height: '100%' }} />
+                    <img src={displayUser.avatar_url || displayUser.avatar} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
 
                 <h2 style={{ margin: '0 0 5px 0', fontSize: '1.2rem' }}>@{displayUser.username}</h2>
@@ -111,9 +111,9 @@ const Profile = ({ username: propUsername, onBack }) => {
                     gap: '20px',
                     marginTop: '15px'
                 }}>
-                    <Stat count={displayUser.following || 0} label="Following" />
-                    <Stat count={displayUser.followers || 0} label="Followers" />
-                    <Stat count={displayUser.likes || 0} label="Likes" />
+                    <Stat count={displayUser.following_count || displayUser.following || 0} label="Following" />
+                    <Stat count={displayUser.followers_count || displayUser.followers || 0} label="Followers" />
+                    <Stat count={displayUser.likes_count || displayUser.likes || 0} label="Likes" />
                 </div>
 
                 {/* Action Buttons */}

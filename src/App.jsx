@@ -75,7 +75,9 @@ const FlowStreamApp = () => {
     <div style={{
       position: 'relative',
       width: '100%',
-      height: '100%',
+      height: '100dvh', // Modern dynamic viewport height
+      display: 'flex',
+      flexDirection: 'column',
       overflow: 'hidden',
       backgroundColor: 'black'
     }}>
@@ -118,9 +120,10 @@ const FlowStreamApp = () => {
 
       {/* Main Content Area */}
       <div style={{
+        flex: 1,
         width: '100%',
-        height: '100%',
-        paddingBottom: 'var(--bottom-nav-height)'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         {renderContent()}
       </div>

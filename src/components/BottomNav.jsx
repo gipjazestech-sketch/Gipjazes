@@ -4,11 +4,9 @@ import { Home, Users, Plus, MessageSquare, User } from 'lucide-react';
 const BottomNav = ({ activeTab, onChange }) => {
   return (
     <div style={{
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
+      position: 'relative',
       width: '100%',
-      height: 'var(--bottom-nav-height)',
+      minHeight: 'var(--bottom-nav-height, 60px)',
       backgroundColor: '#000000',
       display: 'flex',
       justifyContent: 'space-around',

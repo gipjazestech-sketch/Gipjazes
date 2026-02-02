@@ -5,19 +5,23 @@
 
   --color-bg: #000000;
   --color-text: #ffffff;
-  --color-accent: #D4AF37; /* Premium Gold */
+  --color-accent: #D4AF37;
+  /* Premium Gold */
   --color-gold-glow: rgba(212, 175, 55, 0.4);
   --color-accent-blue: #25F4EE;
   --bottom-nav-height: 60px;
 }
 
+html,
 body {
   margin: 0;
   padding: 0;
   background-color: var(--color-bg);
   color: var(--color-text);
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  /* Dynamic viewport height for mobile */
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }

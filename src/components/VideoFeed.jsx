@@ -24,15 +24,15 @@ const VideoFeed = ({ onProfileClick, filterType }) => {
         if (!containerRef.current) return;
 
         const options = {
-            root: containerRef.current,
-            rootMargin: '0px',
-            threshold: 0.6 // Video considered "active" when 60% visible
+            root: null,
+            rootMargin: '-20% 0px -20% 0px', // Narrower window for detection
+            threshold: 0.5
         };
 
         const handleIntersection = (entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const id = Number(entry.target.getAttribute('data-id'));
+                    const id = entry.target.getAttribute('data-id');
                     setCurrentVideoId(id);
                 }
             });
