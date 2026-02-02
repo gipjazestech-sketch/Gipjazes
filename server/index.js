@@ -22,7 +22,41 @@ if (!fs.existsSync(uploadsDir)) {
     } catch (e) {
         console.error("Could not create uploads dir:", e);
     }
-}
+}"Act as a Lead Full-Stack Architect. We are building Gipjazes, a short-form vertical video social platform similar to TikTok.
+1. App Identity & Core Features:
+Name: Gipjazes.
+The Feed: A high-performance, vertical-swipe infinite scroll video feed with auto-playing videos.
+Creator Studio: In-app video recording, basic trimming, and filter application using FFmpeg.
+Social Core: User profiles, real-time likes/comments, and a 'Following' vs. 'For You' discovery mechanism.
+Music Integration: A searchable audio library where users can link specific tracks to their videos.
+2. Technical Architecture:
+Frontend: Use React Native (with TypeScript) for cross-platform iOS and Android support.
+Backend: A Node.js microservices architecture using Express.
+Database: PostgreSQL for relational user data and MongoDB for media metadata.
+Storage & Delivery: Amazon S3 for hosting raw mp4 files and AWS CloudFront as the Content Delivery Network (CDN).
+3. Deliverables Requested:
+Provide a complete folder structure for a monorepo setup (frontend + backend).
+Design a PostgreSQL database schema for users, followers, and video interactions.
+Write the React Native code for the main vertical video player component using react-native-video and FlashList for smooth scrolling.
+Create a Node.js API endpoint for secure video uploads that includes metadata generation.
+Please begin by outlining the system architecture for Gipjazes and then provide the core code for the video feed.""Act as a Lead Full-Stack Architect. We are building Gipjazes, a short-form vertical video social platform similar to TikTok.
+1. App Identity & Core Features:
+Name: Gipjazes.
+The Feed: A high-performance, vertical-swipe infinite scroll video feed with auto-playing videos.
+Creator Studio: In-app video recording, basic trimming, and filter application using FFmpeg.
+Social Core: User profiles, real-time likes/comments, and a 'Following' vs. 'For You' discovery mechanism.
+Music Integration: A searchable audio library where users can link specific tracks to their videos.
+2. Technical Architecture:
+Frontend: Use React Native (with TypeScript) for cross-platform iOS and Android support.
+Backend: A Node.js microservices architecture using Express.
+Database: PostgreSQL for relational user data and MongoDB for media metadata.
+Storage & Delivery: Amazon S3 for hosting raw mp4 files and AWS CloudFront as the Content Delivery Network (CDN).
+3. Deliverables Requested:
+Provide a complete folder structure for a monorepo setup (frontend + backend).
+Design a PostgreSQL database schema for users, followers, and video interactions.
+Write the React Native code for the main vertical video player component using react-native-video and FlashList for smooth scrolling.
+Create a Node.js API endpoint for secure video uploads that includes metadata generation.
+Please begin by outlining the system architecture for Gipjazes and then provide the core code for the video feed."
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {

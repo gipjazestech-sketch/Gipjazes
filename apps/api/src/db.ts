@@ -1,31 +1,30 @@
 import { Pool } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 let pool: any;
 
-// Use a fallback to prevent "Cannot read properties of undefined (reading 'query')"
-const mockPool = {
-    query: async () => ({ rows: [] }),
-    on: () => { },
-    connect: async () => ({ release: () => { } })
-};
+if (process.env.DATABASE_URL) {
+    pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
 
-try {
-    if (process.env.DATABASE_URL) {
-        pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }
-        });
+    pool.on('connect', () => {
+        console.log('📦 Database Connected');
+    });
 
-        pool.on('error', (err: any) => {
-            console.error('Unexpected error on idle client', err);
-        });
-    } else {
-        console.warn('DATABASE_URL is not defined. Queries will use mock data.');
-        pool = mockPool;
-    }
-} catch (error) {
-    console.error('Failed to initialize postgres pool:', error);
-    pool = mockPool;
+    pool.on('error', (err: any) => {
+        console.error('❌ Unexpected error on idle client', err);
+    });
+} else {
+    console.error('❌ DATABASE_URL is not set in environment variables');
+    process.exit(1);
 }
 
 export { pool };

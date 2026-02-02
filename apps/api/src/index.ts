@@ -49,8 +49,19 @@ app.use((err: any, req: any, res: any, next: any) => {
 
 // Start the server (Vercel uses export default but local needs listen)
 if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    const server = app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+    });
+
+    server.on('error', (err: any) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`❌ Port ${PORT} is already in use.`);
+            console.log('💡 Retrying via npm run dev will now automatically clear the port.');
+            process.exit(1);
+        } else {
+            console.error('❌ Server startup error:', err);
+        }
     });
 }
 
