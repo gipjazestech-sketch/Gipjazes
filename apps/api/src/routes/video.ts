@@ -91,9 +91,11 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req: an
         let thumbnailS3Key: string | null = null;
         const bucket = process.env.S3_BUCKET_NAME!;
 
+        const thumbnailName = 'thumbnail.jpg';
+        const hlsPlaylistFile = 'playlist.m3u8';
+
         try {
             // Generate Thumbnail
-            const thumbnailName = 'thumbnail.jpg';
             const thumbnailPath = path.join(tempDir, thumbnailName);
             await new Promise((resolve, reject) => {
                 ffmpeg(file.path)
@@ -119,7 +121,6 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req: an
             // Try HLS transcoding
             const hlsFolder = path.join(tempDir, 'hls');
             if (!fs.existsSync(hlsFolder)) fs.mkdirSync(hlsFolder, { recursive: true });
-            const hlsPlaylistFile = 'playlist.m3u8';
             const hlsPath = path.join(hlsFolder, hlsPlaylistFile);
 
             await new Promise((resolve, reject) => {
@@ -170,16 +171,14 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req: an
 
         let baseUrl;
         if (endpoint) {
-            // Fix for DigitalOcean/Supabase endpoints
-            // Example: https://nyc3.digitaloceanspaces.com -> https://bucket.nyc3.digitaloceanspaces.com
             const url = new URL(endpoint);
             baseUrl = `${url.protocol}//${bucket}.${url.host}`;
         } else {
             baseUrl = `https://${bucket}.s3.amazonaws.com`;
         }
 
-        const playbackHlsUrl = `${baseUrl}/videos/${videoId}/hls/${hlsPlaylistFile}`;
-        const thumbnailUrl = `${baseUrl}/videos/${videoId}/${thumbnailName}`;
+        const playbackHlsUrl = hasHls ? `${baseUrl}/videos/${videoId}/hls/${hlsPlaylistFile}` : null;
+        const thumbnailUrl = thumbnailS3Key ? `${baseUrl}/videos/${videoId}/${thumbnailName}` : null;
         const description = req.body.description || req.body.title || 'Untitled';
         const hashtags = description.match(/#\w+/g) || [];
 
