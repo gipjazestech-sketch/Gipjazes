@@ -1,8 +1,6 @@
 import express from 'express';
 import multer from 'multer';
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
-import ffprobeStatic from 'ffprobe-static';
 import fs from 'fs';
 import path from 'path';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -12,10 +10,19 @@ import { pool } from '../db';
 
 // Configure FFmpeg paths
 try {
-    if (ffmpegStatic) ffmpeg.setFfmpegPath(ffmpegStatic as any);
-    if (ffprobeStatic) ffmpeg.setFfprobePath((ffprobeStatic as any).path);
+    const ffmpegPath = require('ffmpeg-static');
+    const ffprobePath = require('ffprobe-static');
+
+    if (ffmpegPath) {
+        ffmpeg.setFfmpegPath(ffmpegPath);
+        console.log('✅ FFmpeg path set');
+    }
+    if (ffprobePath && ffprobePath.path) {
+        ffmpeg.setFfprobePath(ffprobePath.path);
+        console.log('✅ FFprobe path set');
+    }
 } catch (e) {
-    console.warn("FFmpeg static paths could not be set:", e);
+    console.warn("⚠️ FFmpeg/FFprobe binaries not found or could not be loaded. Video metadata/processing may fail.", e);
 }
 
 const router = express.Router();
