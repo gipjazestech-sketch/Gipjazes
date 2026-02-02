@@ -19,7 +19,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
 
     const handleProfileClick = (e) => {
         e.stopPropagation();
-        if (onProfileClick) onProfileClick(data.username);
+        if (onProfileClick) onProfileClick(data.user?.username || data.username);
     };
 
     const handleLike = (e) => {
@@ -37,7 +37,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
             alert("Please login to follow creators!");
             return;
         }
-        toggleFollow(data.username);
+        toggleFollow(data.user?.username || data.username);
     };
 
     useEffect(() => {
@@ -85,7 +85,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                background: data.videoUrl ? 'black' : bg,
+                background: (data.uri || data.videoUrl) ? 'black' : bg,
                 overflow: 'hidden',
                 scrollSnapAlign: 'start',
                 cursor: 'pointer'
@@ -95,7 +95,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                 <>
                     <video
                         ref={videoRef}
-                        src={data.videoUrl}
+                        src={data.uri || data.videoUrl}
                         loop
                         muted
                         playsInline
@@ -149,14 +149,14 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                         }}
                     >
                         <img
-                            src={data.userAvatar || `https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop`}
+                            src={data.user?.avatar || data.userAvatar || `https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop`}
                             alt="avatar"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                     </div>
 
                     {/* Follow "+" Badge */}
-                    {!(currentUser?.username === data.username || currentUser?.followingList?.includes(data.username)) && (
+                    {!((currentUser?.user?.username || currentUser?.username) === (data.user?.username || data.username) || (currentUser?.user?.followingList || currentUser?.followingList)?.includes(data.user?.username || data.username)) && (
                         <div
                             onClick={handleFollowAction}
                             style={{
@@ -198,7 +198,7 @@ const VideoCard = ({ data, isActive, onProfileClick }) => {
                 textAlign: 'left',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
             }}>
-                <h3 onClick={handleProfileClick} style={{ margin: '0 0 8px 0', fontSize: '1.1rem', cursor: 'pointer' }}>@{data.username}</h3>
+                <h3 onClick={handleProfileClick} style={{ margin: '0 0 8px 0', fontSize: '1.1rem', cursor: 'pointer' }}>@{data.user?.username || data.username}</h3>
                 <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', lineHeight: '1.2' }}>
                     {data.description} <span style={{ fontWeight: 'bold' }}>#fyp #trending</span>
                 </p>

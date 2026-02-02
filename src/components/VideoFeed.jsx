@@ -9,7 +9,7 @@ const VideoFeed = ({ onProfileClick, filterType }) => {
 
     // Filter videos based on active tab
     const displayedVideos = (filterType === 'following' && currentUser)
-        ? videos.filter(v => currentUser.followingList?.includes(v.username))
+        ? videos.filter(v => (currentUser.user?.followingList || currentUser.followingList)?.includes(v.user?.username || v.username))
         : videos;
 
     // Initialize currentVideoId when videos load

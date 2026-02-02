@@ -16,12 +16,17 @@ for (const line of lines) {
         const [key, ...valParts] = line.split('=');
         const value = valParts.join('=');
         if (key && value) {
-            console.log(`Adding ${key} to Vercel...`);
+            console.log(`Syncing ${key} to Vercel...`);
             try {
+                // Remove if exists to avoid interactive prompt
+                try {
+                    execSync(`npx vercel env rm ${key} production --yes`, { stdio: 'ignore' });
+                } catch (e) { }
+
                 // Add env to production
-                execSync(`npx vercel env add ${key} production`, { input: value + '\n', stdio: 'inherit' });
+                execSync(`npx vercel env add ${key} production`, { input: value.trim() + '\n', stdio: 'inherit' });
             } catch (e) {
-                console.warn(`Could not add ${key}: ${e.message}`);
+                console.warn(`Could not sync ${key}: ${e.message}`);
             }
         }
     }
