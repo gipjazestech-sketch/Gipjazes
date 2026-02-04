@@ -210,6 +210,7 @@ router.post('/upload', authenticateToken, upload.single('video'), async (req: an
         fs.rmSync(tempDir, { recursive: true, force: true });
 
         res.status(201).json({
+            success: true,
             message: 'Video uploaded and processed successfully',
             video: rows[0],
         });

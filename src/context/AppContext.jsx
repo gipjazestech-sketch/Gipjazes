@@ -151,7 +151,7 @@ export const AppProvider = ({ children }) => {
         const formData = new FormData();
         formData.append('video', file);
         formData.append('username', username);
-        formData.append('caption', caption);
+        formData.append('description', caption);
 
         try {
             const res = await fetch(`${API_URL}/videos/upload`, {
@@ -161,8 +161,15 @@ export const AppProvider = ({ children }) => {
                 },
                 body: formData
             });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                console.error("Upload server error:", errorData);
+                return false;
+            }
+
             const data = await res.json();
-            if (data.success) {
+            if (data.success || data.video) {
                 // Optimistic update or refetch
                 fetchVideos();
                 return true;

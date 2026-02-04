@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLUMN_COUNT = 3;
@@ -16,9 +16,15 @@ const ProfileScreen = () => {
     const navigation = useNavigation<any>();
     const [activeTab, setActiveTab] = useState('videos');
     const [userVideos, setUserVideos] = useState([]);
-    const { user, logout } = useAuthStore();
+    const { user, logout, isAuthenticated } = useAuthStore();
+    const insets = useSafeAreaInsets();
 
-    React.useEffect(() => {
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigation.navigate('Login');
+            return;
+        }
+
         const loadVideos = async () => {
             if (!user?.id) return;
             try {
@@ -29,7 +35,7 @@ const ProfileScreen = () => {
             }
         };
         loadVideos();
-    }, [user?.id]);
+    }, [user?.id, isAuthenticated, navigation]);
 
     const renderHeader = () => (
         <View style={styles.headerContainer}>
@@ -101,8 +107,10 @@ const ProfileScreen = () => {
 
     const renderVideoItem = ({ item }: { item: any }) => (
         <TouchableOpacity style={styles.gridItem}>
-            {/* Fallback to user avatar if no thumbnail, or use ffmpeg generated thumbnail */}
-            <Image source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/150' }} style={styles.gridImage} />
+            <Image
+                source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/150' }}
+                style={styles.gridImage}
+            />
             <View style={styles.viewCountOverlay}>
                 <Icon name="play-outline" size={12} color="#fff" />
                 <Text style={styles.viewCountText}>{item.views || '0'}</Text>
@@ -110,8 +118,10 @@ const ProfileScreen = () => {
         </TouchableOpacity>
     );
 
+    if (!user) return null;
+
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <FlashList
                 data={activeTab === 'videos' ? userVideos : []}
                 renderItem={renderVideoItem}
@@ -125,7 +135,7 @@ const ProfileScreen = () => {
                     </View>
                 }
             />
-        </SafeAreaView>
+        </View>
     );
 };
 

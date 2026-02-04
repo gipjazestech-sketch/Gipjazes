@@ -7,12 +7,15 @@ import Upload from './pages/Upload';
 import Login from './pages/Login';
 import { Search, Tv } from 'lucide-react';
 
+import SearchModal from './components/SearchModal';
+
 // Separate core app logic to use context hook
 const FlowStreamApp = () => {
   const { currentUser } = useApp();
   const [activeTab, setActiveTab] = useState('foryou');
   const [currentView, setCurrentView] = useState('home');
   const [showUpload, setShowUpload] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const [viewParams, setViewParams] = useState({});
 
@@ -32,6 +35,7 @@ const FlowStreamApp = () => {
 
   const navigateToProfile = (username) => {
     setViewParams({ username });
+    if (showSearch) setShowSearch(false);
     setCurrentView('profile');
   };
 
@@ -43,6 +47,15 @@ const FlowStreamApp = () => {
           setShowUpload(false);
           setCurrentView('home');
         }}
+      />
+    );
+  }
+
+  if (showSearch) {
+    return (
+      <SearchModal
+        onClose={() => setShowSearch(false)}
+        onNavigate={navigateToProfile}
       />
     );
   }
@@ -114,7 +127,12 @@ const FlowStreamApp = () => {
             </span>
           </div>
 
-          <div style={{ opacity: 0.8, pointerEvents: 'auto' }}><Search color="white" size={24} /></div>
+          <div
+            style={{ opacity: 0.8, pointerEvents: 'auto', cursor: 'pointer' }}
+            onClick={() => setShowSearch(true)}
+          >
+            <Search color="white" size={24} />
+          </div>
         </div>
       )}
 

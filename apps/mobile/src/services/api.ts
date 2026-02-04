@@ -72,13 +72,22 @@ export const videoService = {
     uploadVideo: async (formData: FormData) => {
         try {
             const response = await api.post('/videos/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
+                transformRequest: (data, headers) => {
+                    return data; // Let axios/platform handle formData
                 },
             });
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error uploading video', error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                const data = error.response.data;
+                if (typeof data === 'string' && data.includes('<!DOCTYPE html>')) {
+                    throw new Error('Server error: The server returned an HTML error page. This might be due to a timeout or crash.');
+                }
+                throw new Error(data.message || data.error || 'Upload failed');
+            }
             throw error;
         }
     },

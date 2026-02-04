@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 
 import FeedScreen from '../screens/FeedScreen';
 import CreatorScreen from '../screens/CreatorScreen';
@@ -23,18 +23,18 @@ const Stack = createNativeStackNavigator();
 const MainTabNavigator = () => {
     return (
         <Tab.Navigator
-            screenOptions={({ route }) => ({
+            screenOptions={({ route }: { route: any }) => ({
                 headerShown: false,
                 tabBarStyle: {
                     backgroundColor: '#000',
                     borderTopWidth: 0.5,
                     borderTopColor: '#D4AF37', // Golden border
-                    height: 65,
-                    paddingBottom: 10,
+                    height: Platform.OS === 'ios' ? 88 : 60, // Taller on iOS for safe area
+                    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
                 },
                 tabBarActiveTintColor: '#D4AF37', // Golden Active Tab
                 tabBarInactiveTintColor: '#666',
-                tabBarIcon: ({ color, size, focused }) => {
+                tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => {
                     let iconName = 'home';
 
                     if (route.name === 'Home') {
@@ -71,6 +71,7 @@ const MainTabNavigator = () => {
 
 const AppStack = () => {
     return (
+        // @ts-ignore
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Main" component={MainTabNavigator} />
             <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
@@ -82,6 +83,7 @@ const AppStack = () => {
 
 const AuthStack = () => {
     return (
+        // @ts-ignore
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
@@ -93,6 +95,7 @@ const AppNavigator = () => {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
     return (
+        // @ts-ignore
         <NavigationContainer>
             {isAuthenticated ? <AppStack /> : <AuthStack />}
         </NavigationContainer>

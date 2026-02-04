@@ -35,8 +35,9 @@ const Upload = ({ onCancel, onUploadSuccess }) => {
 
     return (
         <div style={{
-            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            backgroundColor: 'black', zIndex: 200, display: 'flex', flexDirection: 'column'
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100dvh',
+            backgroundColor: 'black', zIndex: 200, display: 'flex', flexDirection: 'column',
+            paddingBottom: 'env(safe-area-inset-bottom)', paddingTop: 'env(safe-area-inset-top)'
         }}>
             {/* Header */}
             <div style={{

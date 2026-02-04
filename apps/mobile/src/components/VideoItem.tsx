@@ -32,7 +32,13 @@ interface VideoItemProps {
 import { videoService } from '../services/api';
 import CommentsModal from './CommentsModal';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 const VideoItem: React.FC<VideoItemProps> = ({ uri, isActive, details }) => {
+    const insets = useSafeAreaInsets();
+    const bottomTabHeight = 90; // Approximate tab bar height (including safe area)
+    const bottomPadding = insets.bottom + bottomTabHeight + 10;
+
     const [isPlaying, setIsPlaying] = useState(isActive);
     const [isLiked, setIsLiked] = useState(details.isLiked || false);
     const [isFollowing, setIsFollowing] = useState(details.isFollowing || false);
@@ -106,7 +112,7 @@ const VideoItem: React.FC<VideoItemProps> = ({ uri, isActive, details }) => {
             </TouchableOpacity>
 
             {/* Right Sidebar Actions */}
-            <View style={styles.actionColumn}>
+            <View style={[styles.actionColumn, { bottom: bottomPadding + 30 }]}>
                 <View style={styles.actionItem}>
                     <Image source={{ uri: details.user.avatar }} style={styles.avatar} />
                     {!isFollowing && (
@@ -133,7 +139,7 @@ const VideoItem: React.FC<VideoItemProps> = ({ uri, isActive, details }) => {
             </View>
 
             {/* Bottom Info Overlay */}
-            <View style={styles.infoContainer}>
+            <View style={[styles.infoContainer, { bottom: bottomPadding }]}>
                 <TouchableOpacity onPress={() => {/* Navigate to User Profile */ }} style={styles.usernameContainer}>
                     <Text style={styles.username}>@{details.user.username}</Text>
                 </TouchableOpacity>

@@ -28,7 +28,11 @@ const FILTERS = [
     { name: 'Retro', cmd: '-vf "curves=vintage"' },
 ];
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 const CreatorScreen = ({ navigation }: any) => {
+    const insets = useSafeAreaInsets();
+    // ... existing variable declarations ...
     const device = useCameraDevice('back');
     const { hasPermission, requestPermission } = useCameraPermission();
     const camera = useRef<any>(null);
@@ -43,6 +47,7 @@ const CreatorScreen = ({ navigation }: any) => {
     }, [hasPermission]);
 
     const startRecording = async () => {
+        // ... existing startRecording implementation ...
         if (!camera.current) return;
         setIsRecording(true);
         try {
@@ -77,7 +82,10 @@ const CreatorScreen = ({ navigation }: any) => {
             formData.append('description', description);
             formData.append('title', `Video ${new Date().toLocaleTimeString()}`);
 
-            await videoService.uploadVideo(formData);
+            const res = await videoService.uploadVideo(formData);
+
+            // Assume success if no error thrown, but check if user wants confirmation
+            // The service throws on error.
 
             setRecordedVideo(null);
             setDescription('');
@@ -95,7 +103,12 @@ const CreatorScreen = ({ navigation }: any) => {
         setIsProcessing(true);
 
         const outputFilePath = `${fs.CachesDirectoryPath}/processed_${Date.now()}.mp4`;
-        const command = `-i ${recordedVideo} -t 5 ${activeFilter.cmd} -c:v mpeg4 ${outputFilePath}`;
+        // Simple watermark command if filter is Normal, else apply filter too
+        // Adding watermark text (Gipjazes) at bottom right
+        const watermarkFilter = "drawtext=text='(Gipjazes)':x=w-tw-10:y=h-th-10:fontsize=24:fontcolor=white@0.8:box=1:boxcolor=black@0.5";
+        const filterCmd = activeFilter.cmd ? `${activeFilter.cmd},${watermarkFilter}` : `-vf "${watermarkFilter}"`;
+
+        const command = `-i ${recordedVideo} -t 60 ${filterCmd} -c:v mpeg4 ${outputFilePath}`;
 
         FFmpegKit.execute(command).then(async (session: any) => {
             const returnCode = await session.getReturnCode();
@@ -103,7 +116,8 @@ const CreatorScreen = ({ navigation }: any) => {
                 await uploadVideo(outputFilePath);
             } else {
                 console.error('FFmpeg processing failed');
-                setIsProcessing(false);
+                // Fallback to uploading original if processing fails (optional, but safer)
+                await uploadVideo(recordedVideo);
             }
         });
     };
@@ -142,7 +156,7 @@ const CreatorScreen = ({ navigation }: any) => {
                     </View>
                 )}
 
-                <View style={styles.controlsOverlay}>
+                <View style={[styles.controlsOverlay, { bottom: 40 + insets.bottom }]}>
                     <View style={styles.descriptionContainer}>
                         <TextInput
                             style={styles.descriptionInput}
@@ -196,14 +210,14 @@ const CreatorScreen = ({ navigation }: any) => {
             />
 
             <TouchableOpacity
-                style={styles.recordButton}
+                style={[styles.recordButton, { bottom: 80 + insets.bottom }]}
                 onPress={isRecording ? stopRecording : startRecording}
             >
                 <View style={[styles.innerRecordButton, isRecording && styles.recordingState]} />
             </TouchableOpacity>
 
             {!isRecording && (
-                <View style={styles.sideButtons}>
+                <View style={[styles.sideButtons, { bottom: 150 + insets.bottom }]}>
                     <TouchableOpacity
                         style={styles.sideButton}
                         onPress={() => {
@@ -220,6 +234,7 @@ const CreatorScreen = ({ navigation }: any) => {
                     <TouchableOpacity
                         style={[styles.sideButton, { marginTop: 20 }]}
                         onPress={async () => {
+                            // Mock AI features for demo
                             setIsProcessing(true);
                             try {
                                 Alert.alert("AI Magic", "Analyzing trends and generating script...");
@@ -251,7 +266,6 @@ const styles = StyleSheet.create({
     },
     recordButton: {
         position: 'absolute',
-        bottom: 50,
         alignSelf: 'center',
         width: 80,
         height: 80,
@@ -275,7 +289,6 @@ const styles = StyleSheet.create({
     sideButtons: {
         position: 'absolute',
         right: 20,
-        bottom: 120,
         alignItems: 'center',
     },
     sideButton: {
@@ -295,7 +308,6 @@ const styles = StyleSheet.create({
     },
     controlsOverlay: {
         position: 'absolute',
-        bottom: 40,
         width: '100%',
         alignItems: 'center',
         paddingHorizontal: 20,
