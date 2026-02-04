@@ -7,9 +7,9 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
-    SafeAreaView,
     TextInput,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { marketplaceService } from '../services/api';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -17,6 +17,8 @@ const MarketplaceScreen = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('All');
+
+    const insets = useSafeAreaInsets();
 
     const categories = ['All', 'Fashion', 'Electronics', 'Home', 'Beauty', 'Sports'];
 
@@ -71,7 +73,7 @@ const MarketplaceScreen = () => {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <View style={styles.header}>
                 <View>
                     <Text style={styles.headerSubtitle}>Discover</Text>
@@ -143,7 +145,7 @@ const MarketplaceScreen = () => {
                     />
                 )
             }
-        </SafeAreaView >
+        </View >
     );
 };
 

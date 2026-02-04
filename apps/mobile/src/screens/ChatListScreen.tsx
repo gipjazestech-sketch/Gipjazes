@@ -7,14 +7,15 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
-    SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { chatService } from '../services/api';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const ChatListScreen = ({ navigation }: any) => {
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -57,7 +58,7 @@ const ChatListScreen = ({ navigation }: any) => {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Messages</Text>
                 <TouchableOpacity>
@@ -83,7 +84,7 @@ const ChatListScreen = ({ navigation }: any) => {
                     }
                 />
             )}
-        </SafeAreaView>
+        </View>
     );
 };
 
