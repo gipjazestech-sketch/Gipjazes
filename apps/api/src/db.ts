@@ -8,8 +8,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 let pool: any;
 
 if (process.env.DATABASE_URL) {
+    // Clean the database URL to remove potential quoting or whitespace issues
+    const connectionString = process.env.DATABASE_URL.replace(/['"]/g, '').trim();
+
     pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString,
         ssl: {
             rejectUnauthorized: false
         }
