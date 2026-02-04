@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { pool } from './db';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -49,6 +51,25 @@ app.get(['/', '/health', '/api/health'], async (req, res) => {
         storage: !!process.env.AWS_ACCESS_KEY_ID,
         timestamp: new Date().toISOString()
     });
+});
+
+// 2. Database Setup Route (Emergency)
+app.get('/api/db-setup', async (req, res) => {
+    try {
+        const schemaPath = path.join(process.cwd(), '../../database/schema.sql');
+        // fallback for different deployment structures
+        const possibleCheck = fs.existsSync(schemaPath) ? schemaPath : path.join(process.cwd(), 'database/schema.sql');
+
+        if (!fs.existsSync(possibleCheck)) {
+            return res.status(404).json({ error: 'Schema file not found' });
+        }
+
+        const schema = fs.readFileSync(possibleCheck, 'utf8');
+        await pool.query(schema);
+        res.json({ success: true, message: 'Database schema applied' });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Import Routes
