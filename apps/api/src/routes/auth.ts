@@ -2,13 +2,14 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import pool from '../db';
+import { pool } from '../db';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'gipjazes-secret-key-2024';
 
 // REGISTER
 router.post('/register', async (req: any, res: any) => {
+    console.log('[AUTH] Registration attempt:', req.body.username);
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
@@ -16,6 +17,8 @@ router.post('/register', async (req: any, res: any) => {
     }
 
     try {
+        if (!pool) throw new Error('Database pool not initialized');
+
         // Check if user exists
         const exists = await pool.query('SELECT id FROM users WHERE username = $1 OR email = $2', [username, email]);
         if (exists.rows.length > 0) {
