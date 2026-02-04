@@ -17,19 +17,9 @@ router.post('/register', async (req: any, res: any) => {
     }
 
     try {
-        console.log('[AUTH] Registration debug - Pool object check:', {
-            poolExists: !!pool,
-            poolType: typeof pool,
-            hasQuery: typeof pool?.query === 'function'
-        });
-
         if (!pool || typeof pool.query !== 'function') {
-            const errorMsg = `Database pool is not ready or is malformed. Type: ${typeof pool}`;
-            console.error('[AUTH] CRYSTAL_CLEAR_ERROR:', errorMsg);
-            return res.status(503).json({
-                error: errorMsg,
-                debug: { poolExists: !!pool, type: typeof pool }
-            });
+            console.error('[AUTH] Database pool is missing or malformed');
+            return res.status(500).json({ error: 'Database service is currently unavailable' });
         }
 
         // Check if user exists

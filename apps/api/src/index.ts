@@ -74,7 +74,7 @@ app.get(['/setup-db', '/db-setup', '/api/db-setup', '/api/setup-db'], async (req
             '/var/task/database/schema.sql'
         ];
 
-        let schemaPath = null;
+        let schemaPath: string | null = null;
         for (const p of possiblePaths) {
             if (fs.existsSync(p)) {
                 schemaPath = p;
