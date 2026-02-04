@@ -229,7 +229,7 @@ router.get('/', async (req, res) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = 10;
     const offset = (page - 1) * limit;
-    const currentUserId = (req as any).user?.id || 'anonymous';
+    const currentUserId = (req as any).user?.id || null;
 
     try {
         const query = `
