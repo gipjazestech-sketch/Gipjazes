@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 });
 
 // 1. Health Check
-app.get(['/', '/health', '/api/health'], async (req, res) => {
+app.get(['/', '/health', '/api/health', '/api/v1/health'], async (req, res) => {
     let dbStatus = 'disconnected';
     let dbError = null;
     let tables: string[] = [];
@@ -54,20 +54,29 @@ app.get(['/', '/health', '/api/health'], async (req, res) => {
 });
 
 // 2. Database Setup Route (Emergency)
-app.get('/api/db-setup', async (req, res) => {
+app.get(['/setup-db', '/db-setup', '/api/db-setup', '/api/setup-db'], async (req, res) => {
+    console.log('[DB] Setup route triggered');
     try {
-        const schemaPath = path.join(process.cwd(), '../../database/schema.sql');
-        // fallback for different deployment structures
-        const possibleCheck = fs.existsSync(schemaPath) ? schemaPath : path.join(process.cwd(), 'database/schema.sql');
+        const schemaPath = path.join(process.cwd(), 'database/schema.sql');
+        const schemaPathRoot = path.join(process.cwd(), '../../database/schema.sql');
+
+        let possibleCheck = schemaPath;
+        if (!fs.existsSync(possibleCheck)) possibleCheck = schemaPathRoot;
 
         if (!fs.existsSync(possibleCheck)) {
-            return res.status(404).json({ error: 'Schema file not found' });
+            // Let's try to find it via find... 
+            return res.status(404).json({
+                error: 'Schema file not found',
+                cwd: process.cwd(),
+                tried: [schemaPath, schemaPathRoot]
+            });
         }
 
         const schema = fs.readFileSync(possibleCheck, 'utf8');
         await pool.query(schema);
-        res.json({ success: true, message: 'Database schema applied' });
+        res.json({ success: true, message: 'Database schema applied successfully' });
     } catch (error: any) {
+        console.error('[DB] Setup Error:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
