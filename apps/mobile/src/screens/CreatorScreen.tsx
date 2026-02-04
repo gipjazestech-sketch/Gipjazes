@@ -233,19 +233,7 @@ const CreatorScreen = ({ navigation }: any) => {
 
                     <TouchableOpacity
                         style={[styles.sideButton, { marginTop: 20 }]}
-                        onPress={async () => {
-                            // Mock AI features for demo
-                            setIsProcessing(true);
-                            try {
-                                Alert.alert("AI Magic", "Analyzing trends and generating script...");
-                                await new Promise(r => setTimeout(r, 2000));
-                                Alert.alert("AI Magic", "Synthesizing AI video assets...");
-                                await new Promise(r => setTimeout(r, 3000));
-                                Alert.alert("Development Notice", "AI Generation is in sandbox mode. Final results coming soon!");
-                            } finally {
-                                setIsProcessing(false);
-                            }
-                        }}
+                        onPress={() => navigation.navigate('AIGenerator')}
                     >
                         <Icon name="sparkles" size={28} color="#fff" />
                         <Text style={styles.sideButtonText}>AI Magic</Text>

@@ -14,6 +14,7 @@ import ChatListScreen from '../screens/ChatListScreen';
 import ChatDetailScreen from '../screens/ChatDetailScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import AIGeneratorScreen from '../screens/AIGeneratorScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -77,6 +78,7 @@ const AppStack = () => {
             <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
             <Stack.Screen name="Discover" component={DiscoverScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="AIGenerator" component={AIGeneratorScreen} />
         </Stack.Navigator>
     );
 };

@@ -40,7 +40,14 @@ const RegisterScreen = ({ navigation }: any) => {
             const data = await authService.register({ username, email, password });
             setAuth(data.user, data.token);
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Registration failed. Please try again.');
+            console.error('Registration Error:', err);
+            let errorMessage = 'Registration failed. Please try again.';
+            if (err.response?.data?.error) {
+                errorMessage = err.response.data.error;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

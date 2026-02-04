@@ -13,7 +13,9 @@ export const setAuthToken = (token: string | null) => {
 const PROD_URL = 'https://flow-stream-sigma.vercel.app/api';
 const DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api';
 
-const BASE_URL = __DEV__ ? DEV_URL : PROD_URL;
+// For testing the deployed backend:
+const BASE_URL = PROD_URL;
+// const BASE_URL = __DEV__ ? DEV_URL : PROD_URL;
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -23,6 +25,9 @@ const api = axios.create({
     },
 });
 
+console.log('🚀 API Service Initialized');
+console.log('🔗 Connecting to:', BASE_URL);
+
 api.interceptors.request.use((config) => {
     if (authToken) {
         config.headers.Authorization = `Bearer ${authToken}`;
@@ -30,22 +35,50 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+const handleApiError = (error: any, defaultMessage: string) => {
+    console.error(defaultMessage, error);
+    if (error.response) {
+        const data = error.response.data;
+        if (typeof data === 'string' && data.includes('<!DOCTYPE html>')) {
+            throw new Error('Server error: The server returned an HTML error page. This might be due to a timeout or crash.');
+        }
+        throw new Error(data.message || data.error || defaultMessage);
+    }
+    throw error;
+};
+
 export const authService = {
     login: async (credentials: any) => {
-        const response = await api.post('/auth/login', credentials);
-        return response.data;
+        try {
+            const response = await api.post('/auth/login', credentials);
+            return response.data;
+        } catch (error) {
+            handleApiError(error, 'Login failed');
+        }
     },
     register: async (userData: any) => {
-        const response = await api.post('/auth/register', userData);
-        return response.data;
+        try {
+            const response = await api.post('/auth/register', userData);
+            return response.data;
+        } catch (error) {
+            handleApiError(error, 'Registration failed');
+        }
     },
     getMe: async () => {
-        const response = await api.get('/auth/me');
-        return response.data;
+        try {
+            const response = await api.get('/auth/me');
+            return response.data;
+        } catch (error) {
+            handleApiError(error, 'Failed to fetch user profile');
+        }
     },
     updateProfile: async (profileData: any) => {
-        const response = await api.put('/auth/me', profileData);
-        return response.data;
+        try {
+            const response = await api.put('/auth/me', profileData);
+            return response.data;
+        } catch (error) {
+            handleApiError(error, 'Update failed');
+        }
     }
 };
 
@@ -182,6 +215,18 @@ export const chatService = {
         const response = await api.post('/chat', { recipientId, content });
         return response.data;
     },
+};
+
+export const aiService = {
+    generateVideo: async (prompt: string, style: string) => {
+        try {
+            const response = await api.post('/ai/generate', { prompt, style });
+            return response.data;
+        } catch (error) {
+            console.error('Error generating AI video', error);
+            handleApiError(error, 'AI Generation failed');
+        }
+    }
 };
 
 export default api;

@@ -47,6 +47,8 @@ import videoRoutes from './routes/video';
 import marketplaceRoutes from './routes/marketplace';
 import chatRoutes from './routes/chat';
 
+import aiRoutes from './routes/ai';
+
 // 2. Auth Routes (Unprotected)
 app.use('/api/auth', authRoutes);
 
@@ -54,6 +56,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/videos', optionalAuthenticateToken, videoRoutes);
 app.use('/api/marketplace', authenticateToken, marketplaceRoutes);
 app.use('/api/chat', authenticateToken, chatRoutes);
+app.use('/api/ai', authenticateToken, aiRoutes);
 
 // Error handling
 app.use((err: any, req: any, res: any, next: any) => {
