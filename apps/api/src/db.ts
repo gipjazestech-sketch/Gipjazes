@@ -29,24 +29,36 @@ if (rawConnectionString) {
     } catch (err: any) {
         console.warn('[DB] Native URL parser rejected string. Falling back to manual parse.');
 
-        // Manual Regex Parse for "postgres://user:pass@host:port/database"
-        const regex = /postgres(?:ql)?:\/\/([^:]+):([^@]+)@([^:/]+)(?::(\d+))?\/([^?]+)/;
-        const match = connectionString.match(regex);
+        try {
+            // Manual Parse for "postgres://user:pass@host:port/database"
+            // We use the LAST '@' as the separator between credentials and host
+            const protocolPart = connectionString.split('://');
+            const protocol = protocolPart[0];
+            const rest = protocolPart[1];
 
-        if (match) {
-            const [_, user, password, host, port, database] = match;
+            const lastAtIndex = rest.lastIndexOf('@');
+            if (lastAtIndex === -1) throw new Error("Missing @ in connection string");
+
+            const credentials = rest.substring(0, lastAtIndex);
+            const hostAndDb = rest.substring(lastAtIndex + 1);
+
+            const [userPass, hostPortDb] = [credentials, hostAndDb];
+            const [user, password] = userPass.split(':');
+            const [hostPort, databasePart] = hostPortDb.split('/');
+            const [host, port] = hostPort.split(':');
+
             poolConfig = {
                 user: decodeURIComponent(user),
-                password: decodeURIComponent(password),
+                password: decodeURIComponent(password || ''),
                 host: host,
                 port: port ? parseInt(port) : 5432,
-                database: database.split('?')[0], // Remove query params
+                database: databasePart ? databasePart.split('?')[0] : 'postgres',
                 ssl: isProduction ? { rejectUnauthorized: false } : false,
                 connectionTimeoutMillis: 10000,
             };
             console.log('[DB] Manual parse successful.');
-        } else {
-            console.error('[DB] CRITICAL: Connection string does not match postgres pattern.');
+        } catch (manualErr: any) {
+            console.error('[DB] CRITICAL: Manual parse also failed:', manualErr.message);
         }
     }
 
