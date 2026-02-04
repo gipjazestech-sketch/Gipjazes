@@ -21,20 +21,27 @@ app.use((req, res, next) => {
 // 1. Health Check
 app.get(['/', '/health', '/api/health'], async (req, res) => {
     let dbStatus = 'disconnected';
+    let dbError = null;
     try {
         if (pool) {
             await pool.query('SELECT 1');
             dbStatus = 'connected';
+        } else {
+            dbStatus = 'no_pool';
         }
-    } catch (e) {
+    } catch (e: any) {
         dbStatus = 'error';
+        dbError = e.message;
     }
 
     res.json({
         status: 'ok',
         service: 'gipjazes-api',
         env: process.env.NODE_ENV,
-        database: dbStatus,
+        database: {
+            status: dbStatus,
+            error: dbError
+        },
         storage: !!process.env.AWS_ACCESS_KEY_ID,
         timestamp: new Date().toISOString()
     });

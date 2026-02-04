@@ -10,17 +10,17 @@ let pool: any;
 const rawConnectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING;
 
 if (rawConnectionString) {
-    // 1. Clean the database URL to remove potential quoting or whitespace issues
+    // 1. Clean the database URL: remove quotes, spaces, and NON-PRINTABLE characters (common in bad env copies)
     let connectionString = rawConnectionString.replace(/['"]/g, '').trim();
+    connectionString = connectionString.replace(/[^\x21-\x7E]/g, ''); // Keep only printable ASCII, no spaces
 
-    // 2. Validate it looks like a URL
+    // 2. Validate basic structure
     if (!connectionString.includes('://')) {
-        console.error(`[DB] ERROR: DATABASE_URL does not contain a protocol (://). Found: ${connectionString.substring(0, 15)}...`);
-        // We throw here so the error handler in the routes can catch it
-        throw new Error(`Cloud DB connection string is malformed (missing protocol). Please check your environment variables.`);
+        console.error(`[DB] ERROR: Connection string missing protocol.`);
+        throw new Error(`Cloud DB connection string is malformed (missing ://).`);
     }
 
-    console.log(`[DB] Connecting to database (Protocol: ${connectionString.split('://')[0]})`);
+    console.log(`[DB] Initializing pool (Length: ${connectionString.length})`);
 
     try {
         pool = new Pool({
@@ -28,28 +28,29 @@ if (rawConnectionString) {
             ssl: isProduction ? {
                 rejectUnauthorized: false
             } : false,
-            // Add some timeouts to prevent hanging
-            connectionTimeoutMillis: 5000,
+            connectionTimeoutMillis: 10000,
             idleTimeoutMillis: 30000,
         });
 
-        // Test connection immediately
+        // Test connection immediately to trigger the "Invalid URL" error here if any
         pool.query('SELECT 1').then(() => {
             console.log('📦 Database Connection Verified');
         }).catch((err: any) => {
-            console.error('❌ Database Verification Failed:', err.message);
+            console.error('❌ Database Query Failure:', err.message);
         });
 
     } catch (err: any) {
-        console.error('[DB] Pool Creation Error:', err.message);
+        console.error('[DB] CRITICAL: Pool constructor failed:', err.message);
+        // We set pool to null so index.ts knows it failed
+        pool = null;
         throw err;
     }
 
     pool.on('error', (err: any) => {
-        console.error('❌ Unexpected error on idle client', err.message);
+        console.error('❌ Unexpected error on idle client:', err.message);
     });
 } else {
-    console.warn('⚠️ No database connection string found (DATABASE_URL/POSTGRES_URL). Database operations will fail.');
+    console.warn('⚠️ No database connection string found.');
 }
 
 export { pool };
