@@ -42,8 +42,13 @@ router.post('/register', async (req: any, res: any) => {
 
         res.status(201).json({ user, token });
     } catch (error: any) {
-        console.error('Registration error:', error);
-        res.status(500).json({ error: `Registration failed: ${error.message}` });
+        console.error('[AUTH] Registration error:', error);
+        // Special check for connection errors
+        const msg = error.message || 'Unknown error';
+        if (msg.includes('pool') || msg.includes('connect')) {
+            return res.status(500).json({ error: `Database connection error: ${msg}. Please check your DB credentials.` });
+        }
+        res.status(500).json({ error: `Registration failed: ${msg}` });
     }
 });
 
