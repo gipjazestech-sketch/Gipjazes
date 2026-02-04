@@ -22,10 +22,13 @@ app.use((req, res, next) => {
 app.get(['/', '/health', '/api/health'], async (req, res) => {
     let dbStatus = 'disconnected';
     let dbError = null;
+    let tables: string[] = [];
     try {
         if (pool) {
             await pool.query('SELECT 1');
             dbStatus = 'connected';
+            const { rows } = await pool.query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'");
+            tables = rows.map((t: any) => t.tablename);
         } else {
             dbStatus = 'no_pool';
         }
@@ -40,7 +43,8 @@ app.get(['/', '/health', '/api/health'], async (req, res) => {
         env: process.env.NODE_ENV,
         database: {
             status: dbStatus,
-            error: dbError
+            error: dbError,
+            tables: tables
         },
         storage: !!process.env.AWS_ACCESS_KEY_ID,
         timestamp: new Date().toISOString()
