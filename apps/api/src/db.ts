@@ -52,22 +52,27 @@ if (rawConnectionString) {
     }
 }
 
-// 2. Initialize the pool IMMEDIATELY so the export is never undefined
-// If we have no config, we create a dummy pool that will throw a descriptive error on first query
-export const pool = poolConfig
-    ? new Pool(poolConfig)
-    : new Pool({ connectionString: 'postgres://invalid:invalid@localhost:5432/invalid' });
+// 2. Initialize the pool
+let sharedPool: Pool;
 
-if (poolConfig) {
-    pool.query('SELECT 1')
-        .then(() => console.log('📦 Database Connected and Verified'))
-        .catch(err => console.error('❌ Database Connection Error:', err.message));
+function getPool(): Pool {
+    if (!sharedPool) {
+        sharedPool = poolConfig
+            ? new Pool(poolConfig)
+            : new Pool({ connectionString: 'postgres://invalid:invalid@localhost:5432/invalid' });
 
-    pool.on('error', (err: any) => {
-        console.error('❌ Unexpected DB error:', err.message);
-    });
-} else {
-    console.warn('⚠️ No DATABASE_URL found. Database queries will fail.');
+        if (poolConfig) {
+            sharedPool.query('SELECT 1')
+                .then(() => console.log('📦 Database Connected and Verified'))
+                .catch(err => console.error('❌ Database Connection Error:', err.message));
+
+            sharedPool.on('error', (err: any) => {
+                console.error('❌ Unexpected DB error:', err.message);
+            });
+        }
+    }
+    return sharedPool;
 }
 
+export const pool = getPool();
 export default pool;
