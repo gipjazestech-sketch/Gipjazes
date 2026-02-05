@@ -19,7 +19,7 @@ if (rawConnectionString) {
         new URL(connectionString);
         poolConfig = {
             connectionString,
-            ssl: isProduction ? { rejectUnauthorized: false } : false,
+            ssl: (isProduction || connectionString.includes('supabase')) ? { rejectUnauthorized: false } : false,
             connectionTimeoutMillis: 10000,
         };
     } catch (err) {
@@ -42,7 +42,7 @@ if (rawConnectionString) {
                     host: host,
                     port: port ? parseInt(port) : 5432,
                     database: databasePart ? databasePart.split('?')[0] : 'postgres',
-                    ssl: isProduction ? { rejectUnauthorized: false } : false,
+                    ssl: (isProduction || host.includes('supabase')) ? { rejectUnauthorized: false } : false,
                     connectionTimeoutMillis: 10000,
                 };
             }

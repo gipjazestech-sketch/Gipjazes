@@ -14,8 +14,8 @@ const PROD_URL = 'https://flow-stream-sigma.vercel.app/api';
 const DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api';
 
 // For testing the deployed backend:
-const BASE_URL = PROD_URL;
-// const BASE_URL = __DEV__ ? DEV_URL : PROD_URL;
+// const BASE_URL = PROD_URL;
+const BASE_URL = __DEV__ ? DEV_URL : PROD_URL;
 
 const api = axios.create({
     baseURL: BASE_URL,
